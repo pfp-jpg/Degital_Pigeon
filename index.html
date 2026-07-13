@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEgeon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Yuji+Mai&family=Noto+Serif+JP:wght@400;600&family=Kaisei+Decol&family=Zen+Kurenaido&family=Rampart+One&family=Kiwi+Maru:wght@400;500&family=Potta+One&family=Hachi+Maru+Pop&family=Klee+One:wght@400;600&family=Shippori+Mincho+B1:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --radius: 10px;
+  --font-ui: 'Inter', 'Zen Kurenaido', sans-serif;
+}
+/* ===== THEMES ===== */
+[data-theme="light"]{
+  --bg:#F6F1E7; --bg2:#EFE7D8; --surface:#FFFFFF; --surface2:#FBF8F2;
+  --text:#2B2620; --text-dim:#8B8272; --border:#E3DAC7;
+  --accent:#B5443A; --accent-2:#4A6B5A; --bubble-me:#B5443A; --bubble-me-text:#FFF8F0;
+  --bubble-them:#FFFFFF; --bubble-them-text:#2B2620; --shadow: 0 2px 10px rgba(80,60,30,0.08);
+}
+[data-theme="dark"]{
+  --bg:#1B1B1F; --bg2:#141417; --surface:#232329; --surface2:#2A2A31;
+  --text:#E8E4DA; --text-dim:#8C8A85; --border:#34343C;
+  --accent:#E0574A; --accent-2:#5C8B77; --bubble-me:#E0574A; --bubble-me-text:#FFF8F0;
+  --bubble-them:#2A2A31; --bubble-them-text:#E8E4DA; --shadow: 0 2px 10px rgba(0,0,0,0.35);
+}
+[data-theme="midnight"]{
+  --bg:#0D1321; --bg2:#0A0E19; --surface:#16203A; --surface2:#1C2846;
+  --text:#D6E0F0; --text-dim:#7C8AA8; --border:#26335A;
+  --accent:#5C7CFF; --accent-2:#7C9EFF; --bubble-me:#5C7CFF; --bubble-me-text:#F2F5FF;
+  --bubble-them:#1C2846; --bubble-them-text:#D6E0F0; --shadow: 0 2px 14px rgba(0,0,10,0.5);
+}
+[data-theme="abyss"]{
+  --bg:#050B0C; --bg2:#030607; --surface:#0C1618; --surface2:#10201F;
+  --text:#B8D8D3; --text-dim:#5C7C78; --border:#173230;
+  --accent:#14D8C4; --accent-2:#0E8F82; --bubble-me:#0E8F82; --bubble-me-text:#EAFFFB;
+  --bubble-them:#10201F; --bubble-them-text:#B8D8D3; --shadow: 0 0 16px rgba(20,216,196,0.08);
+}
+[data-theme="winter"]{
+  --bg:#EAF4FB; --bg2:#DCEBF6; --surface:#FFFFFF; --surface2:#F4FAFF;
+  --text:#1E2A38; --text-dim:#7A93A8; --border:#CFE3F1;
+  --accent:#2E86AB; --accent-2:#7FB8D6; --bubble-me:#2E86AB; --bubble-me-text:#F5FBFF;
+  --bubble-them:#FFFFFF; --bubble-them-text:#1E2A38; --shadow: 0 2px 10px rgba(30,80,120,0.08);
+}
+[data-theme="summer"]{
+  --bg:#FFF6E0; --bg2:#FFEFC9; --surface:#FFFFFF; --surface2:#FFFBF0;
+  --text:#2E2A1A; --text-dim:#9C8F5E; --border:#F3E3B0;
+  --accent:#FF6B35; --accent-2:#1B998B; --bubble-me:#FF6B35; --bubble-me-text:#FFF8F0;
+  --bubble-them:#FFFFFF; --bubble-them-text:#2E2A1A; --shadow: 0 2px 10px rgba(150,100,20,0.1);
+}
+[data-theme="spring"]{
+  --bg:#FFF0F5; --bg2:#FFE3ED; --surface:#FFFFFF; --surface2:#FFF8FA;
+  --text:#33262B; --text-dim:#A98A97; --border:#FBD6E4;
+  --accent:#E8779D; --accent-2:#8FCB9B; --bubble-me:#E8779D; --bubble-me-text:#FFF8FA;
+  --bubble-them:#FFFFFF; --bubble-them-text:#33262B; --shadow: 0 2px 10px rgba(200,100,140,0.1);
+}
+[data-theme="fall"]{
+  --bg:#FBEDE0; --bg2:#F5DFC8; --surface:#FFF7EE; --surface2:#FFF1E1;
+  --text:#3A2A1E; --text-dim:#9C7C5E; --border:#EAD2B0;
+  --accent:#C1521C; --accent-2:#8C6A3F; --bubble-me:#C1521C; --bubble-me-text:#FFF8F0;
+  --bubble-them:#FFF7EE; --bubble-them-text:#3A2A1E; --shadow: 0 2px 10px rgba(120,70,20,0.1);
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg); color:var(--text); font-family:var(--font-ui);
+  transition:background .3s ease, color .3s ease; overflow:hidden;
+}
+button{font-family:inherit; cursor:pointer;}
+input,textarea,select{font-family:inherit;}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
+::-webkit-scrollbar-track{background:transparent;}
+
+#app{height:100vh; width:100vw; display:flex; position:relative;}
+
+/* ===== ONBOARDING ===== */
+#onboard{
+  position:fixed; inset:0; background:var(--bg); z-index:200;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.onboard-card{
+  width:100%; max-width:440px; background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; padding:32px; box-shadow:var(--shadow);
+}
+.onboard-title{font-family:'Shippori Mincho B1',serif; font-size:26px; letter-spacing:.08em; margin:0 0 4px;}
+.onboard-sub{color:var(--text-dim); font-size:13px; margin:0 0 24px;}
+.avatar-picker{
+  width:84px; height:84px; border-radius:50%; background:var(--bg2); border:2px dashed var(--border);
+  display:flex; align-items:center; justify-content:center; margin:0 auto 20px; cursor:pointer; overflow:hidden;
+  font-size:26px; color:var(--text-dim);
+}
+.avatar-picker img{width:100%; height:100%; object-fit:cover;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:12px; color:var(--text-dim); margin-bottom:6px; letter-spacing:.03em;}
+.field input[type=text], .field textarea, .field select{
+  width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border);
+  background:var(--surface2); color:var(--text); font-size:14px; outline:none;
+}
+.field textarea{resize:vertical; min-height:60px;}
+.field input:focus, .field textarea:focus, .field select:focus{border-color:var(--accent);}
+.btn-primary{
+  width:100%; padding:12px; border:none; border-radius:8px; background:var(--accent); color:var(--bubble-me-text);
+  font-weight:600; font-size:14px; letter-spacing:.03em; margin-top:8px;
+}
+.btn-primary:disabled{opacity:.5; cursor:not-allowed;}
+.hint{font-size:11px; color:var(--text-dim); margin-top:4px;}
+
+/* ===== SIDEBAR ===== */
+#sidebar{
+  width:280px; min-width:280px; background:var(--bg2); border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+}
+.sb-header{padding:18px 16px 12px; display:flex; align-items:center; gap:10px;}
+.sb-brand{font-family:'Shippori Mincho B1',serif; font-size:19px; letter-spacing:.06em;}
+.sb-brand ruby{ruby-align:center;}
+.sb-brand rt{font-family:var(--font-ui); font-size:9px; color:var(--text-dim); letter-spacing:.02em; font-weight:600;}
+.sb-me{
+  margin:0 12px 12px; padding:10px; background:var(--surface); border-radius:10px; border:1px solid var(--border);
+  display:flex; align-items:center; gap:10px; cursor:pointer;
+}
+.avatar{width:36px; height:36px; border-radius:50%; background:var(--accent-2); color:#fff; display:flex; align-items:center;
+  justify-content:center; font-size:13px; font-weight:600; overflow:hidden; flex-shrink:0;}
+.avatar img{width:100%; height:100%; object-fit:cover;}
+.sb-me-name{font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.sb-gear{margin-left:auto; opacity:.6; font-size:16px;}
+.sb-join{margin:0 12px 12px; display:flex; gap:6px;}
+.sb-join input{flex:1; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:13px; outline:none; min-width:0;}
+.sb-join button{padding:8px 12px; border-radius:8px; border:none; background:var(--accent); color:var(--bubble-me-text); font-size:12px; font-weight:600;}
+.sb-list{flex:1; overflow-y:auto; padding:0 8px 8px;}
+.room-item{
+  padding:10px 10px; border-radius:10px; display:flex; align-items:center; gap:10px; cursor:pointer; margin-bottom:2px;
+}
+.room-item:hover{background:var(--surface);}
+.room-item.active{background:var(--surface); box-shadow:var(--shadow);}
+.room-badge{
+  width:34px; height:34px; border-radius:9px; background:var(--accent); color:var(--bubble-me-text);
+  display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; overflow:hidden;
+}
+.room-name{font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.room-code{font-size:10px; color:var(--text-dim); letter-spacing:.05em;}
+.sb-empty{padding:20px 14px; font-size:12px; color:var(--text-dim); text-align:center;}
+.sb-count{font-size:10px; color:var(--text-dim); padding:4px 16px 10px;}
+
+/* ===== MAIN ===== */
+#main{flex:1; display:flex; flex-direction:column; min-width:0;}
+#emptyMain{flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; color:var(--text-dim);}
+#emptyMain .em-title{font-family:'Shippori Mincho B1',serif; font-size:22px; color:var(--text); margin-bottom:8px;}
+.chat-header{
+  padding:14px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; background:var(--bg);
+}
+.chat-header .room-badge{width:38px; height:38px; border-radius:10px;}
+.ch-title{font-size:15px; font-weight:700;}
+.ch-sub{font-size:11px; color:var(--text-dim);}
+.ch-actions{margin-left:auto; display:flex; gap:8px;}
+.icon-btn{
+  width:34px; height:34px; border-radius:8px; border:1px solid var(--border); background:var(--surface);
+  display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--text);
+}
+#messages{flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:4px;}
+.msg-row{display:flex; gap:10px; max-width:78%; margin-bottom:6px;}
+.msg-row.me{align-self:flex-end; flex-direction:row-reverse;}
+.msg-row .avatar{width:30px; height:30px; font-size:11px; cursor:pointer; margin-top:2px;}
+.msg-col{display:flex; flex-direction:column; min-width:0;}
+.msg-row.me .msg-col{align-items:flex-end;}
+.msg-meta{font-size:11px; color:var(--text-dim); margin-bottom:3px; display:flex; gap:6px;}
+.bubble{
+  padding:9px 13px; border-radius:14px; font-size:14px; line-height:1.55; word-break:break-word; box-shadow:var(--shadow);
+}
+.msg-row:not(.me) .bubble{background:var(--bubble-them); color:var(--bubble-them-text); border-bottom-left-radius:4px;}
+.msg-row.me .bubble{background:var(--bubble-me); color:var(--bubble-me-text); border-bottom-right-radius:4px;}
+.bubble img.att{max-width:220px; border-radius:10px; display:block; margin-top:2px; cursor:pointer;}
+.bubble video.att{max-width:240px; border-radius:10px; display:block; margin-top:2px;}
+.bubble audio.att{margin-top:2px; max-width:240px;}
+.file-chip{display:flex; align-items:center; gap:8px; padding:8px 10px; background:rgba(0,0,0,0.08); border-radius:8px; margin-top:2px; font-size:12px;}
+.spoiler{background:currentColor; color:transparent; border-radius:4px; cursor:pointer; padding:0 2px; transition:.15s; user-select:none;}
+.spoiler.revealed{background:transparent; color:inherit;}
+.spoiler::selection{color:transparent;}
+
+#composer{border-top:1px solid var(--border); padding:12px 16px; background:var(--bg);}
+#attachPreview{display:none; padding:8px 10px; background:var(--surface2); border-radius:8px; margin-bottom:8px; font-size:12px; align-items:center; gap:8px; border:1px solid var(--border);}
+#attachPreview.show{display:flex;}
+.composer-row{display:flex; align-items:flex-end; gap:8px;}
+#msgInput{
+  flex:1; border:1px solid var(--border); background:var(--surface2); color:var(--text); border-radius:18px;
+  padding:11px 16px; font-size:14px; resize:none; max-height:120px; outline:none; line-height:1.4;
+}
+#msgInput:focus{border-color:var(--accent);}
+.round-btn{
+  width:42px; height:42px; border-radius:50%; border:none; background:var(--accent); color:var(--bubble-me-text);
+  font-size:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.round-btn.ghost{background:var(--surface2); color:var(--text); border:1px solid var(--border);}
+.composer-hint{font-size:10px; color:var(--text-dim); margin-top:6px; padding-left:4px;}
+
+/* ===== MODALS ===== */
+.modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:300; display:flex; align-items:center; justify-content:center; padding:20px;}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--surface); border-radius:16px; width:100%; max-width:520px; max-height:85vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:var(--shadow);}
+.modal-head{padding:18px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center;}
+.modal-head h3{margin:0; font-size:16px; font-family:'Shippori Mincho B1',serif; letter-spacing:.04em;}
+.modal-close{margin-left:auto; width:30px; height:30px; border-radius:8px; border:none; background:var(--surface2); font-size:16px; color:var(--text-dim);}
+.modal-body{padding:18px 20px; overflow-y:auto;}
+.tabs{display:flex; gap:6px; padding:0 20px; border-bottom:1px solid var(--border);}
+.tab-btn{padding:10px 4px; margin-right:14px; background:none; border:none; color:var(--text-dim); font-size:13px; font-weight:600; border-bottom:2px solid transparent;}
+.tab-btn.active{color:var(--accent); border-bottom-color:var(--accent);}
+.tab-pane{display:none;} .tab-pane.active{display:block;}
+
+.theme-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+.theme-swatch{border-radius:10px; padding:10px 6px; border:2px solid var(--border); text-align:center; font-size:11px; cursor:pointer; font-weight:600;}
+.theme-swatch.selected{border-color:var(--accent);}
+.swatch-dot{width:26px; height:26px; border-radius:50%; margin:0 auto 6px;}
+
+.font-list{display:flex; flex-direction:column; gap:8px;}
+.font-option{
+  padding:12px 14px; border-radius:10px; border:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+}
+.font-option.selected{border-color:var(--accent); background:var(--surface2);}
+.font-preview{font-size:16px;}
+.font-tag{font-size:10px; color:var(--text-dim);}
+.radio-dot{width:16px; height:16px; border-radius:50%; border:2px solid var(--border); flex-shrink:0;}
+.font-option.selected .radio-dot{border-color:var(--accent); background:var(--accent);}
+.section-label{font-size:12px; font-weight:700; color:var(--text-dim); margin:18px 0 8px; text-transform:uppercase; letter-spacing:.06em;}
+.section-label:first-child{margin-top:0;}
+
+.profile-view{text-align:center; padding:6px 0 0;}
+.profile-view .avatar{width:80px; height:80px; font-size:26px; margin:0 auto 12px;}
+.profile-view .p-name{font-size:18px; font-weight:700; margin-bottom:2px;}
+.profile-view .p-bio{font-size:13px; color:var(--text-dim); white-space:pre-wrap; margin-top:10px; line-height:1.6; text-align:left; background:var(--surface2); padding:12px; border-radius:10px;}
+
+.lang-toggle{display:flex; gap:8px;}
+.lang-toggle button{flex:1; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--surface2); font-size:14px; font-weight:600;}
+.lang-toggle button.selected{border-color:var(--accent); background:var(--accent); color:var(--bubble-me-text);}
+
+.swatch-dot.custom-dot{background:conic-gradient(from 0deg,#E8779D,#FF6B35,#1B998B,#2E86AB,#5C7CFF,#B5443A,#E8779D);}
+#customThemeEditor{display:none; margin-top:14px; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--surface2);}
+#customThemeEditor.show{display:block;}
+.color-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px 14px;}
+.color-field{display:flex; align-items:center; gap:8px;}
+.color-field input[type=color]{width:34px; height:34px; border:1px solid var(--border); border-radius:8px; padding:0; background:none; cursor:pointer; flex-shrink:0;}
+.color-field span{font-size:12px; color:var(--text-dim);}
+.conn-mode{display:flex; flex-direction:column; gap:8px; margin-bottom:14px;}
+.conn-mode label{display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; cursor:pointer; font-size:13px;}
+.conn-mode label.selected{border-color:var(--accent); background:var(--surface2);}
+.conn-mode input{accent-color:var(--accent);}
+.conn-status{font-size:11px; padding:8px 10px; border-radius:8px; margin-top:6px;}
+.conn-status.ok{background:rgba(60,180,100,.15); color:var(--accent-2);}
+.conn-status.warn{background:rgba(220,120,40,.15); color:var(--accent);}
+
+.toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--surface); color:var(--text);
+  border:1px solid var(--border); padding:10px 18px; border-radius:10px; font-size:13px; box-shadow:var(--shadow); z-index:400; opacity:0; transition:.25s;}
+.toast.show{opacity:1;}
+
+#lightbox{position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:500; display:none; align-items:center; justify-content:center; padding:30px;}
+#lightbox.show{display:flex;}
+#lightbox img{max-width:100%; max-height:100%; border-radius:8px;}
+
+@media (max-width:760px){
+  #sidebar{position:fixed; z-index:150; height:100%; transform:translateX(-100%); transition:.25s;}
+  #sidebar.open{transform:translateX(0);}
+  .msg-row{max-width:88%;}
+}
+.avatar-wrap{position:relative; display:inline-flex; flex-shrink:0;}
+.avatar-wrap .frame-img{position:absolute; top:50%; left:50%; pointer-events:none; max-width:none;}
+.frame-controls{margin-top:14px; display:flex; flex-direction:column; gap:10px;}
+.frame-controls .fc-row{display:flex; align-items:center; gap:10px; font-size:12px; color:var(--text-dim);}
+.frame-controls input[type=range]{flex:1; accent-color:var(--accent);}
+.frame-preview-box{width:96px; height:96px; margin:0 auto 10px; position:relative;}
+.attach-chip-list{display:flex; flex-direction:column; gap:6px;}
+.attach-chip{display:flex; align-items:center; gap:8px; padding:6px 10px; background:var(--surface2); border-radius:8px; border:1px solid var(--border); font-size:12px;}
+.attach-chip span{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.room-badge-img{width:100%; height:100%; object-fit:cover; border-radius:inherit;}
+</style>
+</head>
+<body data-theme="light">
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-header">
+      <button class="icon-btn" id="closeSidebarBtn" style="display:none;">✕</button>
+      <div class="sb-brand">DEgeon</div>
+    </div>
+    <div class="sb-me" id="sbMe">
+      <div id="sbMeAvatar"></div>
+      <div class="sb-me-name" id="sbMeName"></div>
+      <div class="sb-gear" id="openSettingsBtn">⚙</div>
+    </div>
+    <div class="sb-join">
+      <input id="joinCodeInput" type="text" placeholder="ルームコードを入力" maxlength="24">
+      <button id="joinRoomBtn">参加</button>
+    </div>
+    <div class="sb-list" id="roomList"></div>
+    <div class="sb-count" id="roomCount"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="emptyMain">
+      <div class="em-title">部屋を選ぶか、コードで参加してください</div>
+      <div style="font-size:12px;">左のサイドバーからルームコードを入力して開始</div>
+    </div>
+    <div id="chatArea" style="display:none; flex-direction:column; height:100%;">
+      <div class="chat-header">
+        <button class="icon-btn" id="openSidebarBtn" style="display:none;">☰</button>
+        <div class="room-badge" id="chBadge"></div>
+        <div style="min-width:0;">
+          <div class="ch-title" id="chTitle"></div>
+          <div class="ch-sub" id="chSub"></div>
+        </div>
+        <div class="ch-actions">
+          <button class="icon-btn" id="editRoomBtn" title="ルーム名・画像を編集">✎</button>
+          <button class="icon-btn" id="copyCodeBtn" title="コードをコピー">⧉</button>
+          <button class="icon-btn" id="leaveRoomBtn" title="退出">🚪</button>
+        </div>
+      </div>
+      <div id="messages"></div>
+      <div id="composer">
+        <div id="attachPreview">
+          <div class="attach-chip-list" id="attachChipList"></div>
+          <button class="round-btn ghost" id="addMoreAttachBtn" style="width:30px;height:30px;font-size:13px;">＋</button>
+        </div>
+        <div class="composer-row">
+          <button class="round-btn ghost" id="attachBtn">📎</button>
+          <textarea id="msgInput" rows="1" placeholder="メッセージを入力… ||で囲むと隠し文字"></textarea>
+          <button class="round-btn" id="sendBtn">➤</button>
+        </div>
+        <div class="composer-hint">||text|| で塗りつぶし隠し文字になります（クリックで表示）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" style="display:none;" multiple>
+<input type="file" id="avatarInput" style="display:none;" accept="image/*">
+<input type="file" id="fontInput" style="display:none;" accept=".ttf,.otf,.woff,.woff2">
+<input type="file" id="frameInput" style="display:none;" accept="image/png,image/*">
+<input type="file" id="roomImageInput" style="display:none;" accept="image/*">
+
+<!-- ONBOARDING -->
+<div id="onboard">
+  <div class="onboard-card">
+    <div class="onboard-title">はじめまして</div>
+    <div class="onboard-sub">プロフィールを設定してチャットを始めましょう</div>
+    <div class="avatar-picker" id="obAvatarPicker">＋</div>
+    <div class="field">
+      <label>名前 *</label>
+      <input type="text" id="obName" placeholder="表示名" maxlength="24">
+    </div>
+    <div class="field">
+      <label>詳細（自己紹介）</label>
+      <textarea id="obBio" placeholder="よろしくお願いします" maxlength="300"></textarea>
+    </div>
+    <div class="field">
+      <label>プロフィール表示フォント（必須・初期フォントから選択）</label>
+      <select id="obFont"></select>
+      <div class="hint">これは必ず初期フォントの中から選びます（バックアップ用）</div>
+    </div>
+    <button class="btn-primary" id="obSubmit" disabled>はじめる</button>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="settingsTitle">設定</h3><button class="modal-close" id="closeSettingsBtn">✕</button></div>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="profile">プロフィール</button>
+      <button class="tab-btn" data-tab="font">フォント</button>
+      <button class="tab-btn" data-tab="theme">テーマ</button>
+      <button class="tab-btn" data-tab="lang">言語</button>
+      <button class="tab-btn" data-tab="conn">接続</button>
+    </div>
+    <div class="modal-body">
+      <div class="tab-pane active" id="pane-profile">
+        <div class="avatar-picker" id="setAvatarPicker" style="margin-bottom:16px;">＋</div>
+        <div class="field"><label>名前</label><input type="text" id="setName" maxlength="24"></div>
+        <div class="field"><label>詳細</label><textarea id="setBio" maxlength="300"></textarea></div>
+        <div class="section-label">アイコンフレーム（任意）</div>
+        <div class="frame-preview-box" id="framePreviewBox"></div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-primary" id="importFrameBtn" style="background:var(--surface2); color:var(--text); border:1px solid var(--border);">＋ フレーム画像を追加</button>
+          <button class="btn-primary" id="removeFrameBtn" style="display:none; background:var(--surface2); color:var(--text); border:1px solid var(--border);">削除</button>
+        </div>
+        <div class="frame-controls" id="frameControls" style="display:none;">
+          <div class="fc-row"><span style="width:56px;">横位置</span><input type="range" id="frameX" min="-40" max="40" value="0"><span id="frameXVal">0</span></div>
+          <div class="fc-row"><span style="width:56px;">縦位置</span><input type="range" id="frameY" min="-40" max="40" value="0"><span id="frameYVal">0</span></div>
+          <div class="fc-row"><span style="width:56px;">大きさ</span><input type="range" id="frameScale" min="50" max="250" value="100"><span id="frameScaleVal">100%</span></div>
+        </div>
+        <button class="btn-primary" id="saveProfileBtn" style="margin-top:16px;">保存する</button>
+      </div>
+      <div class="tab-pane" id="pane-font">
+        <div class="section-label">フォールバックフォント（必須・初期フォントから確定選択）</div>
+        <div class="font-list" id="fallbackFontList"></div>
+        <div class="section-label">プロフィール表示フォント</div>
+        <div class="font-list" id="displayFontList"></div>
+        <div class="section-label">カスタムフォントをインポート</div>
+        <button class="btn-primary" id="importFontBtn" style="background:var(--surface2); color:var(--text); border:1px solid var(--border);">＋ フォントファイルを追加 (.ttf/.otf/.woff)</button>
+        <div class="hint">英語限定フォントの場合、日本語部分はフォールバックフォントで表示されます</div>
+        <div class="font-list" id="customFontList" style="margin-top:10px;"></div>
+        <button class="btn-primary" id="saveFontBtn" style="margin-top:18px;">設定を保存してフォントを更新</button>
+        <div class="hint" id="fontSaveHint" style="text-align:center;"></div>
+      </div>
+      <div class="tab-pane" id="pane-theme">
+        <div class="theme-grid" id="themeGrid"></div>
+        <div id="customThemeEditor">
+          <div class="hint" style="margin-bottom:10px;">好きな色を選んでオリジナルテーマを作成できます</div>
+          <div class="color-grid" id="colorGrid"></div>
+        </div>
+      </div>
+      <div class="tab-pane" id="pane-lang">
+        <div class="lang-toggle">
+          <button data-lang="ja" id="langJa">日本語</button>
+          <button data-lang="en" id="langEn">English</button>
+        </div>
+      </div>
+      <div class="tab-pane" id="pane-conn">
+        <div class="hint" style="margin-bottom:12px;">チャットの送受信に使う保存先を選べます。Claude環境では自動的に共有ストレージが使われます。</div>
+        <div class="conn-mode" id="connModeList"></div>
+        <div class="field" id="firebaseUrlField" style="display:none;">
+          <label>Firebase Realtime Database URL</label>
+          <input type="text" id="firebaseUrlInput" placeholder="https://your-project-id-default-rtdb.firebaseio.com">
+        </div>
+        <button class="btn-primary" id="saveConnBtn">この設定を保存</button>
+        <div class="conn-status" id="connStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE VIEW MODAL -->
+<div class="modal-overlay hidden" id="profileModal">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-head"><h3>プロフィール</h3><button class="modal-close" id="closeProfileBtn">✕</button></div>
+    <div class="modal-body">
+      <div class="profile-view" id="profileViewBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM INFO EDIT MODAL -->
+<div class="modal-overlay hidden" id="roomInfoModal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-head"><h3>ルームを編集</h3><button class="modal-close" id="closeRoomInfoBtn">✕</button></div>
+    <div class="modal-body">
+      <div class="avatar-picker" id="roomImagePicker" style="margin-bottom:16px;">＋</div>
+      <div class="field"><label>ルーム名</label><input type="text" id="roomInfoName" maxlength="30"></div>
+      <div class="hint" style="margin-bottom:14px;">メンバー全員に表示されます</div>
+      <button class="btn-primary" id="saveRoomInfoBtn">保存する</button>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox"><img id="lightboxImg" src=""></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===================== CONSTANTS ===================== */
+const DEFAULT_FONTS = [
+  {id:'dotgothic16', name:'DotGothic16', css:"'DotGothic16', sans-serif", sample:'ドット文字 Aa'},
+  {id:'yujimai', name:'Yuji Mai', css:"'Yuji Mai', serif", sample:'筆文字 Aa'},
+  {id:'notoserifjp', name:'Noto Serif JP', css:"'Noto Serif JP', serif", sample:'明朝体 Aa'},
+  {id:'kaiseidecol', name:'Kaisei Decol', css:"'Kaisei Decol', serif", sample:'雅な文字 Aa'},
+  {id:'zenkurenaido', name:'Zen Kurenaido', css:"'Zen Kurenaido', sans-serif", sample:'くれない Aa'},
+  {id:'rampartone', name:'Rampart One', css:"'Rampart One', cursive", sample:'立体文字 Aa'},
+  {id:'kiwimaru', name:'Kiwi Maru', css:"'Kiwi Maru', serif", sample:'まる文字 Aa'},
+  {id:'pottaone', name:'Potta One', css:"'Potta One', cursive", sample:'ポップ Aa'},
+  {id:'hachimarupop', name:'Hachi Maru Pop', css:"'Hachi Maru Pop', cursive", sample:'まるぽっぷ Aa'},
+  {id:'kleeone', name:'Klee One', css:"'Klee One', cursive", sample:'手書き文字 Aa'},
+  {id:'shipporimincho', name:'Shippori Mincho B1', css:"'Shippori Mincho B1', serif", sample:'しっぽり明朝 Aa'},
+];
+const THEMES = [
+  {id:'light', ja:'ライト', en:'Light', dot:'#B5443A'},
+  {id:'dark', ja:'ダーク', en:'Dark', dot:'#E0574A'},
+  {id:'midnight', ja:'ミッドナイト', en:'Midnight', dot:'#5C7CFF'},
+  {id:'abyss', ja:'アビス', en:'Abyss', dot:'#14D8C4'},
+  {id:'winter', ja:'ウィンター', en:'Winter', dot:'#2E86AB'},
+  {id:'summer', ja:'サマー', en:'Summer', dot:'#FF6B35'},
+  {id:'spring', ja:'スプリング', en:'Spring', dot:'#E8779D'},
+  {id:'fall', ja:'フォール', en:'Fall', dot:'#C1521C'},
+  {id:'custom', ja:'カスタム', en:'Custom', dot:null},
+];
+const CUSTOM_VARS = [
+  {key:'bg', ja:'背景', en:'Background'},
+  {key:'bg2', ja:'背景（濃）', en:'Background 2'},
+  {key:'surface', ja:'カード面', en:'Surface'},
+  {key:'surface2', ja:'カード面（濃）', en:'Surface 2'},
+  {key:'text', ja:'文字色', en:'Text'},
+  {key:'textDim', ja:'文字色（薄）', en:'Text dim'},
+  {key:'border', ja:'枠線', en:'Border'},
+  {key:'accent', ja:'アクセント', en:'Accent'},
+  {key:'accent2', ja:'アクセント2', en:'Accent 2'},
+  {key:'bubbleMe', ja:'自分の吹き出し', en:'My bubble'},
+  {key:'bubbleMeText', ja:'自分の吹き出し文字', en:'My bubble text'},
+  {key:'bubbleThem', ja:'相手の吹き出し', en:'Their bubble'},
+  {key:'bubbleThemText', ja:'相手の吹き出し文字', en:'Their bubble text'},
+];
+const DEFAULT_CUSTOM_THEME = {
+  bg:'#F6F1E7', bg2:'#EFE7D8', surface:'#FFFFFF', surface2:'#FBF8F2',
+  text:'#2B2620', textDim:'#8B8272', border:'#E3DAC7',
+  accent:'#7A5CFF', accent2:'#4A6B5A', bubbleMe:'#7A5CFF', bubbleMeText:'#FFFFFF',
+  bubbleThem:'#FFFFFF', bubbleThemText:'#2B2620'
+};
+const VAR_MAP = {bg:'--bg',bg2:'--bg2',surface:'--surface',surface2:'--surface2',text:'--text',textDim:'--text-dim',
+  border:'--border',accent:'--accent',accent2:'--accent-2',bubbleMe:'--bubble-me',bubbleMeText:'--bubble-me-text',
+  bubbleThem:'--bubble-them',bubbleThemText:'--bubble-them-text'};
+const MAX_ROOMS = 64;
+const MAX_ATTACH_COUNT = 10;
+const POLL_MS = 3500;
+function getMaxFileBytes(){
+  if(backendConfig.mode==='firebase') return 15*1024*1024;
+  if(backendConfig.mode==='local') return 2*1024*1024;
+  return 3.6*1024*1024; // claude shared storage ~5MB value cap after base64 overhead
+}
+
+/* ===================== STATE ===================== */
+let profile = null;   // {id,name,avatar,bio,font,frame:{dataUrl,x,y,scale}}
+let settings = null;  // {theme,language,fallbackFont,customFonts:[{name,dataUrl}]}
+let rooms = [];        // [{code,nickname}]
+let roomInfoCache = {}; // code -> {name, image}
+let currentRoom = null;
+let pollTimer = null;
+let knownMsgIds = new Set();
+let pendingAttachments = []; // [{dataUrl,type,name,size}]
+let injectedFontNames = new Set();
+
+const $ = (id)=>document.getElementById(id);
+const uid = ()=> 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const escapeHtml = (s)=> s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+function fontCssById(id){
+  const f = DEFAULT_FONTS.find(f=>f.id===id);
+  return f ? f.css : "'Zen Kurenaido', sans-serif";
+}
+function resolveFontStack(fontRef){
+  // fontRef could be default font id, or 'custom:<name>'
+  const fallback = settings ? fontCssById(settings.fallbackFont) : "'Zen Kurenaido', sans-serif";
+  if(fontRef && fontRef.startsWith('custom:')){
+    const name = fontRef.slice(7);
+    return `'${name}', ${fallback}`;
+  }
+  return fontCssById(fontRef);
+}
+function applyUiFont(){
+  if(!profile) return;
+  document.body.style.setProperty('--font-ui', resolveFontStack(profile.font));
+}
+
+/* ===================== STORAGE ADAPTER ===================== */
+/* Backends:
+   - "claude": uses window.storage, available automatically inside Claude.ai artifacts
+   - "firebase": uses a user-supplied Firebase Realtime Database (works anywhere, cross-device)
+   - "local": browser localStorage only (works with no setup, but only syncs between tabs of the SAME browser) */
+const HAS_CLAUDE_STORAGE = (typeof window.storage !== 'undefined' && window.storage !== null);
+let backendConfig = {mode: HAS_CLAUDE_STORAGE ? 'claude' : 'local', firebaseUrl:''};
+let localDeviceId = null;
+
+function safeLocalStorage(){ try{ return window.localStorage; }catch(e){ return null; } }
+
+function loadBackendConfig(){
+  const ls = safeLocalStorage();
+  if(!ls) return;
+  try{
+    const raw = ls.getItem('yuichat_backend');
+    if(raw){ const c = JSON.parse(raw); if(c && c.mode) backendConfig = c; }
+  }catch(e){}
+  localDeviceId = ls.getItem('yuichat_device_id');
+  if(!localDeviceId){ localDeviceId = 'dev_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); try{ls.setItem('yuichat_device_id', localDeviceId);}catch(e){} }
+  if(!HAS_CLAUDE_STORAGE && backendConfig.mode==='claude') backendConfig.mode='local';
+}
+async function saveBackendConfig(){
+  const ls = safeLocalStorage();
+  if(ls){ try{ ls.setItem('yuichat_backend', JSON.stringify(backendConfig)); }catch(e){} }
+}
+
+function fbKeyPath(key, shared){
+  const safe = String(key).replace(/[.#$\[\]]/g,'_');
+  return shared ? `shared/${safe}` : `personal/${localDeviceId}/${safe}`;
+}
+async function firebaseGet(key, shared){
+  if(!backendConfig.firebaseUrl) return null;
+  try{
+    const res = await fetch(`${backendConfig.firebaseUrl.replace(/\/$/,'')}/${fbKeyPath(key,shared)}.json`);
+    const data = await res.json();
+    return data===null ? null : (typeof data==='string' ? data : JSON.stringify(data));
+  }catch(e){ return null; }
+}
+async function firebaseSet(key, value, shared){
+  if(!backendConfig.firebaseUrl) return false;
+  try{
+    const res = await fetch(`${backendConfig.firebaseUrl.replace(/\/$/,'')}/${fbKeyPath(key,shared)}.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(value)
+    });
+    return res.ok;
+  }catch(e){ return false; }
+}
+async function firebaseList(prefix, shared){
+  if(!backendConfig.firebaseUrl) return [];
+  try{
+    const parent = shared ? 'shared' : `personal/${localDeviceId}`;
+    const res = await fetch(`${backendConfig.firebaseUrl.replace(/\/$/,'')}/${parent}.json?shallow=true`);
+    const data = await res.json();
+    if(!data) return [];
+    const safePrefix = String(prefix).replace(/[.#$\[\]]/g,'_');
+    return Object.keys(data).filter(k=>k.startsWith(safePrefix));
+  }catch(e){ return []; }
+}
+async function firebaseDelete(key, shared){
+  if(!backendConfig.firebaseUrl) return false;
+  try{
+    const res = await fetch(`${backendConfig.firebaseUrl.replace(/\/$/,'')}/${fbKeyPath(key,shared)}.json`, {method:'DELETE'});
+    return res.ok;
+  }catch(e){ return false; }
+}
+
+function localKeyPath(key, shared){
+  return `yuichat_data_${shared?'shared':'personal_'+localDeviceId}__${key}`;
+}
+function localGet(key, shared){
+  const ls = safeLocalStorage(); if(!ls) return null;
+  try{ return ls.getItem(localKeyPath(key,shared)); }catch(e){ return null; }
+}
+function localSet(key, value, shared){
+  const ls = safeLocalStorage(); if(!ls) return false;
+  try{ ls.setItem(localKeyPath(key,shared), value); return true; }catch(e){ return false; }
+}
+function localListKeys(prefix, shared){
+  const ls = safeLocalStorage(); if(!ls) return [];
+  const marker = `yuichat_data_${shared?'shared':'personal_'+localDeviceId}__`;
+  const out = [];
+  try{
+    for(let i=0;i<ls.length;i++){
+      const full = ls.key(i);
+      if(full && full.startsWith(marker+prefix)) out.push(full.slice(marker.length));
+    }
+  }catch(e){}
+  return out;
+}
+function localDelete(key, shared){
+  const ls = safeLocalStorage(); if(!ls) return false;
+  try{ ls.removeItem(localKeyPath(key,shared)); return true; }catch(e){ return false; }
+}
+
+async function sget(key, shared){
+  if(backendConfig.mode==='claude' && HAS_CLAUDE_STORAGE){
+    try{ const r = await window.storage.get(key, !!shared); return r ? r.value : null; }catch(e){ return null; }
+  }
+  if(backendConfig.mode==='firebase') return await firebaseGet(key, shared);
+  return localGet(key, shared);
+}
+async function sset(key, value, shared){
+  if(backendConfig.mode==='claude' && HAS_CLAUDE_STORAGE){
+    try{ await window.storage.set(key, value, !!shared); return true; }catch(e){ console.error(e); return false; }
+  }
+  if(backendConfig.mode==='firebase') return await firebaseSet(key, value, shared);
+  return localSet(key, value, shared);
+}
+async function slist(prefix, shared){
+  if(backendConfig.mode==='claude' && HAS_CLAUDE_STORAGE){
+    try{ const r = await window.storage.list(prefix, !!shared); return r ? r.keys : []; }catch(e){ return []; }
+  }
+  if(backendConfig.mode==='firebase') return await firebaseList(prefix, shared);
+  return localListKeys(prefix, shared);
+}
+async function sdelete(key, shared){
+  if(backendConfig.mode==='claude' && HAS_CLAUDE_STORAGE){
+    try{ await window.storage.delete(key, !!shared); return true; }catch(e){ return false; }
+  }
+  if(backendConfig.mode==='firebase') return await firebaseDelete(key, shared);
+  return localDelete(key, shared);
+}
+
+/* ===================== INIT ===================== */
+async function init(){
+  loadBackendConfig();
+  populateOnboardFontSelect();
+  buildThemeGrid();
+  buildFontLists();
+  buildConnTab();
+
+  const p = await sget('profile', false);
+  const s = await sget('settings', false);
+  const r = await sget('rooms', false);
+
+  settings = s ? JSON.parse(s) : {theme:'light', language:'ja', fallbackFont:'zenkurenaido', customFonts:[]};
+  if(!settings.customTheme) settings.customTheme = Object.assign({}, DEFAULT_CUSTOM_THEME);
+  rooms = r ? JSON.parse(r) : [];
+
+  applyTheme();
+  applyLanguage();
+  (settings.customFonts||[]).forEach(cf=>injectCustomFont(cf.name, cf.dataUrl));
+
+  if(p){
+    profile = JSON.parse(p);
+    finishBoot();
+  }else{
+    $('onboard').style.display='flex';
+  }
+}
+
+function finishBoot(){
+  $('onboard').style.display='none';
+  applyUiFont();
+  renderSidebarMe();
+  renderRoomList();
+  bindEvents();
+  updateComposerHint();
+  if(window.innerWidth<=760){ $('openSidebarBtn').style.display='flex'; $('closeSidebarBtn').style.display='flex'; }
+}
+
+/* ===================== ONBOARDING ===================== */
+function populateOnboardFontSelect(){
+  const sel = $('obFont');
+  sel.innerHTML = DEFAULT_FONTS.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');
+  sel.value = 'zenkurenaido';
+}
+let obAvatarData = null;
+
+async function resizeImageFile(file, maxDim, quality, format){
+  if(!file) return null;
+  if(file.size > 20*1024*1024){ toast('画像ファイルが大きすぎます（20MB以下にしてください）'); return null; }
+  format = format || 'image/jpeg';
+  return new Promise((resolve)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w>=h){ if(w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; } }
+        else{ if(h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; } }
+        const canvas = document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL(format, quality));
+      };
+      img.onerror = ()=>{ toast('画像を読み込めませんでした'); resolve(null); };
+      img.src = reader.result;
+    };
+    reader.onerror = ()=>{ toast('画像を読み込めませんでした'); resolve(null); };
+    reader.readAsDataURL(file);
+  });
+}
+async function handleAvatarFile(file){
+  // downscale to at most 256px and compress to JPEG so it always fits comfortably in storage limits
+  return await resizeImageFile(file, 256, 0.85, 'image/jpeg');
+}
+async function handleFrameFile(file){
+  // preserve transparency: PNG, modest size cap
+  return await resizeImageFile(file, 320, 1, 'image/png');
+}
+async function handleRoomImageFile(file){
+  return await resizeImageFile(file, 320, 0.85, 'image/jpeg');
+}
+
+async function syncProfileToAllRooms(){
+  if(!profile) return;
+  const payload = JSON.stringify({
+    id:profile.id, name:profile.name, avatar:profile.avatar||'', bio:profile.bio||'', font:profile.font,
+    frame: profile.frame||null, lastSeen:Date.now()
+  });
+  for(const r of rooms){ await sset(`room:${r.code}:member:${profile.id}`, payload, true); }
+}
+
+function checkObValid(){
+  $('obSubmit').disabled = !$('obName').value.trim();
+}
+
+/* ===================== FONT INJECTION ===================== */
+function injectCustomFont(name, dataUrl){
+  if(injectedFontNames.has(name)) return;
+  const style = document.createElement('style');
+  style.textContent = `@font-face{ font-family:'${name}'; src:url(${dataUrl}); font-display:swap; }`;
+  document.head.appendChild(style);
+  injectedFontNames.add(name);
+}
+function reloadGoogleFontsStylesheet(){
+  const link = document.querySelector('link[href*="fonts.googleapis.com"]');
+  if(!link) return;
+  const fresh = link.cloneNode();
+  const base = link.href.split('&_r=')[0];
+  fresh.href = base + '&_r=' + Date.now();
+  link.after(fresh);
+  fresh.onload = ()=>{ link.remove(); };
+}
+
+/* ===================== SIDEBAR ===================== */
+function initials(name){ return (name||'?').trim().slice(0,1).toUpperCase(); }
+
+function avatarHtml(person, sizePx){
+  const inner = person && person.avatar ? `<img src="${person.avatar}">` : initials(person&&person.name);
+  let frameHtml = '';
+  if(person && person.frame && person.frame.dataUrl){
+    const f = person.frame;
+    const scale = (f.scale!=null?f.scale:1)*100;
+    const x = f.x||0, y = f.y||0;
+    frameHtml = `<img class="frame-img" src="${f.dataUrl}" style="width:${scale}%;height:${scale}%;transform:translate(calc(-50% + ${x}px), calc(-50% + ${y}px));">`;
+  }
+  return `<div class="avatar-wrap" style="width:${sizePx}px;height:${sizePx}px;"><div class="avatar" style="width:100%;height:100%;">${inner}</div>${frameHtml}</div>`;
+}
+
+function renderSidebarMe(){
+  $('sbMeAvatar').innerHTML = avatarHtml(profile, 36);
+  $('sbMeName').textContent = profile.name;
+  $('sbMeName').style.fontFamily = resolveFontStack(profile.font);
+}
+
+function roomColor(code){
+  let h=0; for(let i=0;i<code.length;i++) h = (h*31 + code.charCodeAt(i))>>>0;
+  const hue = h % 360;
+  return `hsl(${hue} 55% 45%)`;
+}
+
+function renderRoomList(){
+  const list = $('roomList');
+  if(rooms.length===0){
+    list.innerHTML = `<div class="sb-empty">まだ参加中のルームはありません。<br>上のコード欄から参加しましょう。</div>`;
+  }else{
+    list.innerHTML = rooms.map(r=>{
+      const info = roomInfoCache[r.code];
+      const badgeInner = (info && info.image) ? `<img class="room-badge-img" src="${info.image}">` : escapeHtml(r.code.slice(0,2).toUpperCase());
+      const displayName = (info && info.name) || r.nickname || r.code;
+      return `
+      <div class="room-item ${currentRoom && currentRoom.code===r.code?'active':''}" data-code="${escapeHtml(r.code)}">
+        <div class="room-badge" style="background:${roomColor(r.code)}">${badgeInner}</div>
+        <div style="min-width:0;">
+          <div class="room-name">${escapeHtml(displayName)}</div>
+          <div class="room-code">#${escapeHtml(r.code)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('.room-item').forEach(el=>{
+      el.onclick = ()=> openRoom(el.dataset.code);
+    });
+  }
+  $('roomCount').textContent = `${rooms.length} / ${MAX_ROOMS} ルーム`;
+}
+
+/* ===================== ROOM JOIN / OPEN ===================== */
+async function joinRoom(){
+  let code = $('joinCodeInput').value.trim();
+  if(!code) return;
+  code = code.replace(/\s+/g,'').slice(0,24);
+  if(rooms.find(r=>r.code===code)){ openRoom(code); $('joinCodeInput').value=''; return; }
+  if(rooms.length >= MAX_ROOMS){ toast('ルームは最大64件までです'); return; }
+  rooms.push({code, nickname:code});
+  await sset('rooms', JSON.stringify(rooms), false);
+  await sset(`room:${code}:member:${profile.id}`, JSON.stringify({
+    id:profile.id, name:profile.name, avatar:profile.avatar||'', bio:profile.bio||'', font:profile.font, frame:profile.frame||null, lastSeen:Date.now()
+  }), true);
+  $('joinCodeInput').value='';
+  renderRoomList();
+  openRoom(code);
+  toast('ルームに参加しました');
+}
+
+async function openRoom(code){
+  const r = rooms.find(r=>r.code===code);
+  if(!r) return;
+  currentRoom = r;
+  knownMsgIds = new Set();
+  currentRoomMessages = [];
+  $('emptyMain').style.display='none';
+  $('chatArea').style.display='flex';
+  $('messages').innerHTML='';
+  renderRoomList();
+  if(window.innerWidth<=760) $('sidebar').classList.remove('open');
+  await sset(`room:${code}:member:${profile.id}`, JSON.stringify({
+    id:profile.id, name:profile.name, avatar:profile.avatar||'', bio:profile.bio||'', font:profile.font, frame:profile.frame||null, lastSeen:Date.now()
+  }), true);
+  await refreshRoomInfo(code);
+  await refreshMessages(true);
+  clearInterval(pollTimer);
+  pollTimer = setInterval(()=>{ refreshMessages(false); refreshRoomInfo(currentRoom && currentRoom.code); }, POLL_MS);
+}
+
+async function refreshRoomInfo(code){
+  if(!code) return;
+  const raw = await sget(`room:${code}:info`, true);
+  let info = null;
+  if(raw){ try{ info = JSON.parse(raw); }catch(e){} }
+  roomInfoCache[code] = info;
+  if(!currentRoom || currentRoom.code!==code) return;
+  const displayName = (info && info.name) || currentRoom.nickname || code;
+  $('chTitle').textContent = displayName;
+  $('chSub').textContent = `コード: ${code}`;
+  if(info && info.image){
+    $('chBadge').style.background = 'transparent';
+    $('chBadge').innerHTML = `<img class="room-badge-img" src="${info.image}">`;
+  }else{
+    $('chBadge').style.background = roomColor(code);
+    $('chBadge').textContent = code.slice(0,2).toUpperCase();
+  }
+  // keep sidebar nickname in sync locally for quick display
+  if(info && info.name && currentRoom.nickname!==info.name){
+    currentRoom.nickname = info.name;
+    const idx = rooms.findIndex(x=>x.code===code);
+    if(idx>=0){ rooms[idx].nickname = info.name; sset('rooms', JSON.stringify(rooms), false); }
+  }
+  renderRoomList();
+}
+
+async function resetRoomContents(code){
+  const msgKeys = await slist(`room:${code}:msg:`, true);
+  for(const k of msgKeys){ await sdelete(k, true); }
+  await sdelete(`room:${code}:info`, true);
+}
+
+async function leaveCurrentRoom(){
+  if(!currentRoom) return;
+  const code = currentRoom.code;
+  rooms = rooms.filter(r=>r.code!==code);
+  await sset('rooms', JSON.stringify(rooms), false);
+  await sdelete(`room:${code}:member:${profile.id}`, true);
+  clearInterval(pollTimer);
+  currentRoom = null;
+  $('chatArea').style.display='none';
+  $('emptyMain').style.display='flex';
+  renderRoomList();
+  toast('ルームを退出しました');
+  // if nobody else is left in this room, wipe its messages & info
+  const remaining = await slist(`room:${code}:member:`, true);
+  if(remaining.length===0){
+    await resetRoomContents(code);
+  }
+}
+
+/* ===================== MESSAGES ===================== */
+async function refreshMessages(scrollToBottom){
+  if(!currentRoom) return;
+  const code = currentRoom.code;
+  const keys = await slist(`room:${code}:msg:`, true);
+  const newKeys = keys.filter(k=>!knownMsgIds.has(k));
+  if(newKeys.length===0) return;
+  newKeys.sort();
+  const box = $('messages');
+  const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+  for(const k of newKeys){
+    knownMsgIds.add(k);
+    const raw = await sget(k, true);
+    if(!raw) continue;
+    try{
+      const m = JSON.parse(raw);
+      appendMessageDOM(m);
+    }catch(e){}
+  }
+  if(scrollToBottom || atBottom) box.scrollTop = box.scrollHeight;
+}
+
+function parseSpoilers(text){
+  const escaped = escapeHtml(text);
+  return escaped.replace(/\|\|([\s\S]+?)\|\|/g, (m,inner)=>`<span class="spoiler" onclick="this.classList.toggle('revealed')">${inner}</span>`)
+    .replace(/\n/g,'<br>');
+}
+
+let currentRoomMessages = []; // cache of {id,m} for the open room, used to re-render on font refresh
+
+function attachmentHtml(m){
+  const files = m.files || (m.file ? [m.file] : []);
+  if(files.length===0) return '';
+  return files.map(f=>{
+    const {dataUrl, type, name} = f;
+    if(type.startsWith('image/')) return `<img class="att" src="${dataUrl}" onclick="window.__openLightbox('${dataUrl.replace(/'/g,"%27")}')">`;
+    if(type.startsWith('video/')) return `<video class="att" src="${dataUrl}" controls></video>`;
+    if(type.startsWith('audio/')) return `<audio class="att" src="${dataUrl}" controls></audio>`;
+    return `<a class="file-chip" href="${dataUrl}" download="${escapeHtml(name)}" style="color:inherit;text-decoration:none;">📄 ${escapeHtml(name)}</a>`;
+  }).join('<br>');
+}
+
+function buildMessageRow(m){
+  const isMe = m.userId === profile.id;
+  const person = isMe ? profile : m; // own bubbles reflect current profile live; others use what was sent
+  const row = document.createElement('div');
+  row.className = 'msg-row' + (isMe?' me':'');
+  const av = document.createElement('div');
+  av.innerHTML = avatarHtml(person, 30);
+  av.style.cursor = 'pointer';
+  av.onclick = ()=> showProfileFor(m.userId, {name:person.name, avatar:person.avatar, bio:person.bio, font:person.font, frame:person.frame});
+  const col = document.createElement('div');
+  col.className='msg-col';
+  const meta = document.createElement('div');
+  meta.className='msg-meta';
+  const time = new Date(m.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  meta.innerHTML = `<span>${escapeHtml(person.name||'')}</span><span>${time}</span>`;
+  const bubble = document.createElement('div');
+  bubble.className='bubble';
+  bubble.style.fontFamily = resolveFontStack(person.font);
+  let inner='';
+  if(m.text) inner += parseSpoilers(m.text);
+  const attHtml = attachmentHtml(m);
+  if(attHtml) inner += (inner?'<br>':'') + attHtml;
+  bubble.innerHTML = inner;
+  col.appendChild(meta); col.appendChild(bubble);
+  row.appendChild(av); row.appendChild(col);
+  return row;
+}
+
+function appendMessageDOM(m){
+  currentRoomMessages.push(m);
+  $('messages').appendChild(buildMessageRow(m));
+}
+
+function rerenderAllMessages(){
+  const box = $('messages');
+  const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+  box.innerHTML='';
+  currentRoomMessages.forEach(m=> box.appendChild(buildMessageRow(m)));
+  if(atBottom) box.scrollTop = box.scrollHeight;
+}
+
+async function sendMessage(){
+  const text = $('msgInput').value.trim();
+  if(!text && pendingAttachments.length===0) return;
+  if(!currentRoom) return;
+  const id = Date.now().toString(36).padStart(9,'0') + '_' + Math.random().toString(36).slice(2,8);
+  const msg = {
+    id, userId:profile.id, name:profile.name, avatar:profile.avatar||'', font:profile.font, frame:profile.frame||null,
+    text: text||'',
+    files: pendingAttachments.map(a=>({dataUrl:a.dataUrl, type:a.type, name:a.name})),
+    ts: Date.now()
+  };
+  $('msgInput').value=''; autoGrow($('msgInput'));
+  pendingAttachments=[]; renderAttachChips(); hideAttachPreview();
+  const ok = await sset(`room:${currentRoom.code}:msg:${id}`, JSON.stringify(msg), true);
+  if(!ok){ toast('送信に失敗しました（合計ファイルサイズが大きすぎる可能性があります）'); return; }
+  knownMsgIds.add(`room:${currentRoom.code}:msg:${id}`);
+  appendMessageDOM(msg);
+  $('messages').scrollTop = $('messages').scrollHeight;
+}
+
+function autoGrow(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+
+/* ===================== ATTACHMENT ===================== */
+function hideAttachPreview(){ if(pendingAttachments.length===0) $('attachPreview').classList.remove('show'); }
+function currentAttachBytes(){ return pendingAttachments.reduce((sum,a)=>sum+a.size,0); }
+function renderAttachChips(){
+  const list = $('attachChipList');
+  list.innerHTML = pendingAttachments.map((a,i)=>`
+    <div class="attach-chip"><span>📎 ${escapeHtml(a.name)}</span><button class="icon-btn" style="width:22px;height:22px;font-size:10px;" data-idx="${i}">✕</button></div>
+  `).join('');
+  list.querySelectorAll('button[data-idx]').forEach(btn=>{
+    btn.onclick = ()=>{
+      pendingAttachments.splice(parseInt(btn.dataset.idx,10),1);
+      renderAttachChips();
+      if(pendingAttachments.length===0) hideAttachPreview();
+    };
+  });
+  if(pendingAttachments.length>0) $('attachPreview').classList.add('show');
+}
+async function handleFilesSelect(fileList){
+  const files = Array.from(fileList||[]);
+  if(files.length===0) return;
+  const maxBytes = getMaxFileBytes();
+  for(const file of files){
+    if(pendingAttachments.length >= MAX_ATTACH_COUNT){ toast(`一度に送れるファイルは最大${MAX_ATTACH_COUNT}個までです`); break; }
+    if(currentAttachBytes() + file.size > maxBytes){
+      toast(`添付の合計サイズが上限（約${(maxBytes/1024/1024).toFixed(1)}MB）を超えます`);
+      continue;
+    }
+    await new Promise(resolve=>{
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        pendingAttachments.push({dataUrl:reader.result, type:file.type||'application/octet-stream', name:file.name, size:file.size});
+        resolve();
+      };
+      reader.onerror = ()=> resolve();
+      reader.readAsDataURL(file);
+    });
+  }
+  renderAttachChips();
+}
+
+/* ===================== PROFILE VIEW ===================== */
+async function showProfileFor(userId, fallbackData){
+  let data = fallbackData;
+  if(userId===profile.id){
+    data = profile;
+  }else if(currentRoom){
+    const raw = await sget(`room:${currentRoom.code}:member:${userId}`, true);
+    if(raw){ try{ data = JSON.parse(raw); }catch(e){} }
+  }
+  const body = $('profileViewBody');
+  body.innerHTML = `
+    <div style="display:flex;justify-content:center;">${avatarHtml(data, 80)}</div>
+    <div class="p-name" style="font-family:${resolveFontStack(data.font)}">${escapeHtml(data.name||'')}</div>
+    ${data.bio?`<div class="p-bio" style="font-family:${resolveFontStack(data.font)}">${escapeHtml(data.bio)}</div>`:''}
+  `;
+  $('profileModal').classList.remove('hidden');
+}
+
+/* ===================== SETTINGS: THEME / FONT / LANG ===================== */
+function buildThemeGrid(){
+  $('themeGrid').innerHTML = THEMES.map(t=>`
+    <div class="theme-swatch" data-theme="${t.id}">
+      <div class="swatch-dot ${t.id==='custom'?'custom-dot':''}" style="${t.dot?`background:${t.dot}`:''}"></div>
+      <div class="t-label">${t.ja}</div>
+    </div>`).join('');
+}
+
+function buildCustomColorGrid(){
+  $('colorGrid').innerHTML = CUSTOM_VARS.map(v=>`
+    <div class="color-field">
+      <input type="color" data-var="${v.key}" value="${settings.customTheme[v.key]}">
+      <span>${v.ja}</span>
+    </div>`).join('');
+  $('colorGrid').querySelectorAll('input[type=color]').forEach(inp=>{
+    inp.addEventListener('input', async ()=>{
+      settings.customTheme[inp.dataset.var] = inp.value;
+      if(settings.theme==='custom') applyTheme();
+    });
+    inp.addEventListener('change', async ()=>{
+      await sset('settings', JSON.stringify(settings), false);
+    });
+  });
+}
+
+function applyTheme(){
+  if(settings.theme==='custom'){
+    document.body.removeAttribute('data-theme');
+    const root = document.body.style;
+    Object.keys(VAR_MAP).forEach(k=>{
+      root.setProperty(VAR_MAP[k], settings.customTheme[k] || DEFAULT_CUSTOM_THEME[k]);
+    });
+    root.setProperty('--shadow','0 2px 10px rgba(0,0,0,0.12)');
+  }else{
+    // clear any custom inline overrides then apply named theme
+    const root = document.body.style;
+    Object.values(VAR_MAP).forEach(v=>root.removeProperty(v));
+    root.removeProperty('--shadow');
+    document.body.setAttribute('data-theme', settings.theme);
+  }
+  $('customThemeEditor') && $('customThemeEditor').classList.toggle('show', settings.theme==='custom');
+}
+
+function buildFontLists(){
+  const opts = DEFAULT_FONTS.map(f=>`
+    <div class="font-option" data-font="${f.id}">
+      <div><div class="font-preview" style="font-family:${f.css}">${f.sample}</div><div class="font-tag">${f.name}</div></div>
+      <div class="radio-dot"></div>
+    </div>`).join('');
+  $('fallbackFontList').innerHTML = opts;
+  $('displayFontList').innerHTML = opts + '';
+}
+
+function renderCustomFontList(){
+  const list = settings.customFonts||[];
+  $('customFontList').innerHTML = list.map(cf=>`
+    <div class="font-option" data-customfont="${escapeHtml(cf.name)}">
+      <div><div class="font-preview" style="font-family:'${cf.name}',sans-serif">${escapeHtml(cf.name)} Aa あア</div><div class="font-tag">カスタム</div></div>
+      <div class="radio-dot"></div>
+    </div>`).join('') || `<div class="hint">インポート済みのフォントはありません</div>`;
+}
+
+function refreshSettingsUI(){
+  // theme
+  document.querySelectorAll('.theme-swatch').forEach(el=>{
+    el.classList.toggle('selected', el.dataset.theme===settings.theme);
+  });
+  buildCustomColorGrid();
+  $('customThemeEditor').classList.toggle('show', settings.theme==='custom');
+  refreshConnUI();
+  // fallback font (default fonts only)
+  document.querySelectorAll('#fallbackFontList .font-option').forEach(el=>{
+    el.classList.toggle('selected', el.dataset.font===settings.fallbackFont);
+  });
+  // display/profile font (default + custom)
+  const curFont = profile.font;
+  document.querySelectorAll('#displayFontList .font-option').forEach(el=>{
+    el.classList.toggle('selected', el.dataset.font===curFont);
+  });
+  renderCustomFontList();
+  document.querySelectorAll('#customFontList .font-option').forEach(el=>{
+    el.classList.toggle('selected', ('custom:'+el.dataset.customfont)===curFont);
+  });
+  // lang
+  $('langJa').classList.toggle('selected', settings.language==='ja');
+  $('langEn').classList.toggle('selected', settings.language==='en');
+  // profile fields
+  $('setName').value = profile.name;
+  $('setBio').value = profile.bio||'';
+  $('setAvatarPicker').innerHTML = profile.avatar ? `<img src="${profile.avatar}">` : '＋';
+  // frame
+  if(profile.frame){
+    $('frameControls').style.display='flex';
+    $('removeFrameBtn').style.display='inline-block';
+    $('frameX').value = profile.frame.x||0;
+    $('frameY').value = profile.frame.y||0;
+    $('frameScale').value = Math.round((profile.frame.scale!=null?profile.frame.scale:1)*100);
+    $('frameXVal').textContent = profile.frame.x||0;
+    $('frameYVal').textContent = profile.frame.y||0;
+    $('frameScaleVal').textContent = $('frameScale').value+'%';
+  }else{
+    $('frameControls').style.display='none';
+    $('removeFrameBtn').style.display='none';
+  }
+  renderFramePreview();
+}
+
+function renderFramePreview(){
+  $('framePreviewBox').innerHTML = avatarHtml(profile, 96);
+}
+
+function applyLanguage(){
+  const ja = settings.language==='ja';
+  document.documentElement.lang = ja?'ja':'en';
+  const T = {
+    settingsTitle: ja?'設定':'Settings',
+    joinPh: ja?'ルームコードを入力':'Enter room code',
+    join: ja?'参加':'Join',
+    emptyTitle: ja?'部屋を選ぶか、コードで参加してください':'Select a room or join with a code',
+    emptySub: ja?'左のサイドバーからルームコードを入力して開始':'Enter a room code in the sidebar to start',
+    msgPh: ja?'メッセージを入力… ||で囲むと隠し文字':'Type a message… wrap in || to hide text',
+    hint: ja?'||text|| で塗りつぶし隠し文字になります（クリックで表示）':'Wrap text in ||...|| to spoiler it (click to reveal)',
+  };
+  $('settingsTitle').textContent = T.settingsTitle;
+  $('joinCodeInput').placeholder = T.joinPh;
+  $('joinRoomBtn').textContent = T.join;
+  $('msgInput').placeholder = T.msgPh;
+  document.querySelector('.composer-hint').textContent = T.hint;
+  updateComposerHint();
+  const emTitle = document.querySelector('#emptyMain .em-title');
+  if(emTitle) emTitle.textContent = T.emptyTitle;
+  const emSub = document.querySelector('#emptyMain div:last-child');
+  if(emSub) emSub.textContent = T.emptySub;
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    const map = ja ? {profile:'プロフィール',font:'フォント',theme:'テーマ',lang:'言語',conn:'接続'} : {profile:'Profile',font:'Fonts',theme:'Theme',lang:'Language',conn:'Connection'};
+    b.textContent = map[b.dataset.tab];
+  });
+  document.querySelectorAll('.theme-swatch').forEach(el=>{
+    const t = THEMES.find(t=>t.id===el.dataset.theme);
+    el.querySelector('.t-label').textContent = ja?t.ja:t.en;
+  });
+}
+
+function updateComposerHint(){
+  const ja = !settings || settings.language==='ja';
+  const mb = (getMaxFileBytes()/1024/1024).toFixed(1);
+  const el = document.querySelector('.composer-hint');
+  if(!el) return;
+  const spoilerText = ja?'||text|| で塗りつぶし隠し文字になります（クリックで表示）':'Wrap text in ||...|| to spoiler it (click to reveal)';
+  const fileText = ja? ` ／ 添付は最大${MAX_ATTACH_COUNT}個・合計約${mb}MBまで` : ` / up to ${MAX_ATTACH_COUNT} files, ~${mb}MB total`;
+  el.textContent = spoilerText + fileText;
+}
+
+/* ===================== CONNECTION (BACKEND) TAB ===================== */
+function buildConnTab(){
+  const ja = !settings || settings.language==='ja';
+  const options = [
+    {id:'claude', label: ja?'Claude共有ストレージ（自動・推奨、Claude.ai内でのみ利用可）':'Claude shared storage (automatic, only works inside Claude.ai)', disabled: !HAS_CLAUDE_STORAGE},
+    {id:'firebase', label: ja?'Firebase Realtime Database（自分のFirebaseに接続・どこでも動作）':'Firebase Realtime Database (bring your own, works anywhere)', disabled:false},
+    {id:'local', label: ja?'ローカルのみ（設定不要・同じブラウザのタブ間のみ同期）':'Local only (no setup, syncs only between tabs of this browser)', disabled:false},
+  ];
+  $('connModeList').innerHTML = options.map(o=>`
+    <label data-mode="${o.id}" style="${o.disabled?'opacity:.45;cursor:not-allowed;':''}">
+      <input type="radio" name="connmode" value="${o.id}" ${o.disabled?'disabled':''}>
+      <span>${o.label}</span>
+    </label>`).join('');
+  $('connModeList').querySelectorAll('input[name=connmode]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      backendConfig.mode = inp.value;
+      refreshConnUI();
+    });
+  });
+}
+function refreshConnUI(){
+  document.querySelectorAll('#connModeList label').forEach(l=>{
+    const inp = l.querySelector('input');
+    const on = backendConfig.mode===l.dataset.mode;
+    inp.checked = on;
+    l.classList.toggle('selected', on);
+  });
+  $('firebaseUrlField').style.display = backendConfig.mode==='firebase' ? 'block' : 'none';
+  $('firebaseUrlInput').value = backendConfig.firebaseUrl || '';
+  const st = $('connStatus');
+  if(backendConfig.mode==='claude'){
+    st.textContent = HAS_CLAUDE_STORAGE ? '✓ Claude共有ストレージに接続中です' : '⚠ この環境ではClaude共有ストレージは利用できません';
+    st.className = 'conn-status ' + (HAS_CLAUDE_STORAGE?'ok':'warn');
+  }else if(backendConfig.mode==='firebase'){
+    st.textContent = backendConfig.firebaseUrl ? '✓ Firebase URLが設定されています' : '⚠ Firebase URLを入力して保存してください';
+    st.className = 'conn-status ' + (backendConfig.firebaseUrl?'ok':'warn');
+  }else{
+    st.textContent = '✓ ローカルモード：このブラウザ内の複数タブ間でのみメッセージが同期されます（他の人とチャットするにはFirebaseの設定が必要です）';
+    st.className = 'conn-status warn';
+  }
+}
+
+/* ===================== EVENTS ===================== */
+function bindEvents(){
+  $('joinRoomBtn').onclick = joinRoom;
+  $('joinCodeInput').addEventListener('keydown', e=>{ if(e.key==='Enter') joinRoom(); });
+  $('leaveRoomBtn').onclick = leaveCurrentRoom;
+  $('copyCodeBtn').onclick = ()=>{
+    if(!currentRoom) return;
+    navigator.clipboard && navigator.clipboard.writeText(currentRoom.code);
+    toast('コードをコピーしました');
+  };
+  $('sendBtn').onclick = sendMessage;
+  $('msgInput').addEventListener('keydown', e=>{
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+  });
+  $('msgInput').addEventListener('input', ()=>autoGrow($('msgInput')));
+  $('attachBtn').onclick = ()=> $('fileInput').click();
+  $('addMoreAttachBtn').onclick = ()=> $('fileInput').click();
+  $('fileInput').addEventListener('change', e=>{ handleFilesSelect(e.target.files); e.target.value=''; });
+
+  $('editRoomBtn').onclick = ()=>{
+    if(!currentRoom) return;
+    const info = roomInfoCache[currentRoom.code] || {};
+    $('roomInfoName').value = info.name || currentRoom.nickname || currentRoom.code;
+    $('roomImagePicker').innerHTML = info.image ? `<img src="${info.image}">` : '＋';
+    $('roomImagePicker').dataset.image = info.image || '';
+    $('roomInfoModal').classList.remove('hidden');
+  };
+  $('closeRoomInfoBtn').onclick = ()=> $('roomInfoModal').classList.add('hidden');
+  $('roomImagePicker').onclick = ()=> $('roomImageInput').click();
+  $('roomImageInput').addEventListener('change', async e=>{
+    const dataUrl = await handleRoomImageFile(e.target.files[0]);
+    e.target.value='';
+    if(!dataUrl) return;
+    $('roomImagePicker').innerHTML = `<img src="${dataUrl}">`;
+    $('roomImagePicker').dataset.image = dataUrl;
+  });
+  $('saveRoomInfoBtn').onclick = async ()=>{
+    if(!currentRoom) return;
+    const code = currentRoom.code;
+    const name = $('roomInfoName').value.trim() || code;
+    const image = $('roomImagePicker').dataset.image || '';
+    const info = {name, image, updatedAt:Date.now(), updatedBy:profile.id};
+    const ok = await sset(`room:${code}:info`, JSON.stringify(info), true);
+    if(!ok){ toast('保存に失敗しました（画像が大きすぎる可能性があります）'); return; }
+    roomInfoCache[code] = info;
+    $('roomInfoModal').classList.add('hidden');
+    await refreshRoomInfo(code);
+    toast('ルーム情報を保存しました');
+  };
+
+  $('openSettingsBtn').onclick = ()=>{ refreshSettingsUI(); $('settingsModal').classList.remove('hidden'); };
+  $('closeSettingsBtn').onclick = ()=> $('settingsModal').classList.add('hidden');
+  $('closeProfileBtn').onclick = ()=> $('profileModal').classList.add('hidden');
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.onclick = ()=>{
+      document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      $('pane-'+b.dataset.tab).classList.add('active');
+    };
+  });
+
+  $('openSidebarBtn').onclick = ()=> $('sidebar').classList.add('open');
+  $('closeSidebarBtn').onclick = ()=> $('sidebar').classList.remove('open');
+
+  $('setAvatarPicker').onclick = ()=> { $('avatarInput').dataset.mode='settings'; $('avatarInput').click(); };
+  $('avatarInput').addEventListener('change', async e=>{
+    const file = e.target.files[0];
+    e.target.value='';
+    const dataUrl = await handleAvatarFile(file);
+    if(!dataUrl) return;
+    if($('avatarInput').dataset.mode==='onboard'){
+      obAvatarData = dataUrl;
+      $('obAvatarPicker').innerHTML = `<img src="${dataUrl}">`;
+    }else{
+      profile.avatar = dataUrl;
+      $('setAvatarPicker').innerHTML = `<img src="${dataUrl}">`;
+      const ok = await sset('profile', JSON.stringify(profile), false);
+      if(ok){
+        await syncProfileToAllRooms();
+        renderSidebarMe();
+        renderFramePreview();
+        toast('プロフィール画像を保存しました');
+      }else{
+        toast('画像の保存に失敗しました');
+      }
+    }
+  });
+
+  $('importFrameBtn').onclick = ()=> $('frameInput').click();
+  $('frameInput').addEventListener('change', async e=>{
+    const dataUrl = await handleFrameFile(e.target.files[0]);
+    e.target.value='';
+    if(!dataUrl) return;
+    profile.frame = {dataUrl, x:0, y:0, scale:1};
+    $('frameControls').style.display='flex';
+    $('removeFrameBtn').style.display='inline-block';
+    $('frameX').value=0; $('frameY').value=0; $('frameScale').value=100;
+    $('frameXVal').textContent='0'; $('frameYVal').textContent='0'; $('frameScaleVal').textContent='100%';
+    renderFramePreview();
+    await sset('profile', JSON.stringify(profile), false);
+    await syncProfileToAllRooms();
+    renderSidebarMe();
+    toast('フレームを追加しました');
+  });
+  $('removeFrameBtn').onclick = async ()=>{
+    profile.frame = null;
+    $('frameControls').style.display='none';
+    $('removeFrameBtn').style.display='none';
+    renderFramePreview();
+    await sset('profile', JSON.stringify(profile), false);
+    await syncProfileToAllRooms();
+    renderSidebarMe();
+  };
+  ['frameX','frameY','frameScale'].forEach(id=>{
+    $(id).addEventListener('input', ()=>{
+      if(!profile.frame) return;
+      const v = parseInt($(id).value,10);
+      if(id==='frameX'){ profile.frame.x=v; $('frameXVal').textContent=v; }
+      if(id==='frameY'){ profile.frame.y=v; $('frameYVal').textContent=v; }
+      if(id==='frameScale'){ profile.frame.scale=v/100; $('frameScaleVal').textContent=v+'%'; }
+      renderFramePreview();
+    });
+    $(id).addEventListener('change', async ()=>{
+      if(!profile.frame) return;
+      await sset('profile', JSON.stringify(profile), false);
+      await syncProfileToAllRooms();
+      renderSidebarMe();
+    });
+  });
+
+  $('saveProfileBtn').onclick = async ()=>{
+    profile.name = $('setName').value.trim() || profile.name;
+    profile.bio = $('setBio').value.trim();
+    await sset('profile', JSON.stringify(profile), false);
+    await syncProfileToAllRooms();
+    renderSidebarMe();
+    toast('プロフィールを保存しました');
+  };
+
+  document.querySelectorAll('#fallbackFontList .font-option').forEach(el=>{
+    el.onclick = async ()=>{
+      settings.fallbackFont = el.dataset.font;
+      await sset('settings', JSON.stringify(settings), false);
+      applyUiFont();
+      refreshSettingsUI();
+      if(currentRoom) refreshChatFonts();
+    };
+  });
+  document.querySelectorAll('#displayFontList .font-option').forEach(el=>{
+    el.onclick = async ()=>{
+      profile.font = el.dataset.font;
+      await sset('profile', JSON.stringify(profile), false);
+      await syncProfileToAllRooms();
+      applyUiFont();
+      renderSidebarMe();
+      refreshSettingsUI();
+      if(currentRoom) refreshChatFonts();
+    };
+  });
+
+  $('saveFontBtn').onclick = async ()=>{
+    await sset('settings', JSON.stringify(settings), false);
+    await sset('profile', JSON.stringify(profile), false);
+    await syncProfileToAllRooms();
+    applyUiFont();
+    renderSidebarMe();
+    reloadGoogleFontsStylesheet();
+    if(currentRoom) rerenderAllMessages();
+    refreshSettingsUI();
+    $('fontSaveHint').textContent = (settings.language==='en') ? 'Fonts refreshed.' : 'フォントを更新しました';
+    toast(settings.language==='en' ? 'Fonts saved & refreshed' : 'フォント設定を保存して更新しました');
+  };
+
+  $('importFontBtn').onclick = ()=> $('fontInput').click();
+  $('fontInput').addEventListener('change', async e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 3.5*1024*1024){ toast('フォントファイルは3.5MB以下にしてください'); return; }
+    const reader = new FileReader();
+    reader.onload = async ()=>{
+      const name = file.name.replace(/\.[^.]+$/,'').replace(/[^a-zA-Z0-9_\- ]/g,'') || ('CustomFont'+Date.now());
+      settings.customFonts = settings.customFonts || [];
+      settings.customFonts.push({name, dataUrl: reader.result});
+      injectCustomFont(name, reader.result);
+      const ok = await sset('settings', JSON.stringify(settings), false);
+      if(!ok){ toast('保存に失敗しました（ファイルが大きい可能性があります）'); settings.customFonts.pop(); return; }
+      refreshSettingsUI();
+      toast('フォントを追加しました。プロフィールフォントから選択できます');
+    };
+    reader.readAsDataURL(file);
+    e.target.value='';
+  });
+
+  $('themeGrid').addEventListener('click', async e=>{
+    const el = e.target.closest('.theme-swatch');
+    if(!el) return;
+    settings.theme = el.dataset.theme;
+    applyTheme();
+    await sset('settings', JSON.stringify(settings), false);
+    refreshSettingsUI();
+  });
+
+  $('langJa').onclick = async ()=>{ settings.language='ja'; await sset('settings', JSON.stringify(settings), false); applyLanguage(); buildConnTab(); refreshSettingsUI(); };
+  $('langEn').onclick = async ()=>{ settings.language='en'; await sset('settings', JSON.stringify(settings), false); applyLanguage(); buildConnTab(); refreshSettingsUI(); };
+
+  $('saveConnBtn').onclick = async ()=>{
+    if(backendConfig.mode==='firebase'){
+      const url = $('firebaseUrlInput').value.trim().replace(/\/$/,'');
+      if(!url){ toast('Firebase URLを入力してください'); return; }
+      backendConfig.firebaseUrl = url;
+    }
+    await saveBackendConfig();
+    refreshConnUI();
+    toast('接続設定を保存しました。ページを再読み込みすると反映されます');
+  };
+
+  window.__openLightbox = (url)=>{ $('lightboxImg').src=url; $('lightbox').classList.add('show'); };
+  $('lightbox').onclick = ()=> $('lightbox').classList.remove('show');
+
+  document.querySelectorAll('.modal-overlay').forEach(m=>{
+    m.addEventListener('click', e=>{ if(e.target===m) m.classList.add('hidden'); });
+  });
+
+  document.addEventListener('click', e=>{
+    const cfOpt = e.target.closest('#customFontList .font-option');
+    if(cfOpt){
+      profile.font = 'custom:'+cfOpt.dataset.customfont;
+      sset('profile', JSON.stringify(profile), false);
+      syncProfileToAllRooms();
+      applyUiFont();
+      renderSidebarMe();
+      refreshSettingsUI();
+      if(currentRoom) refreshChatFonts();
+    }
+  });
+}
+
+function refreshChatFonts(){
+  toast('この後送信するメッセージから新しいフォントが反映されます');
+}
+
+/* ===================== ONBOARD SUBMIT ===================== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  $('obName').addEventListener('input', checkObValid);
+  $('obAvatarPicker').onclick = ()=>{ $('avatarInput').dataset.mode='onboard'; $('avatarInput').click(); };
+  $('obSubmit').onclick = async ()=>{
+    const name = $('obName').value.trim();
+    if(!name) return;
+    profile = {
+      id: uid(),
+      name,
+      bio: $('obBio').value.trim(),
+      font: $('obFont').value,
+      avatar: obAvatarData || '',
+      frame: null
+    };
+    await sset('profile', JSON.stringify(profile), false);
+    finishBoot();
+  };
+});
+
+init();
+})();
+</script>
+</body>
+</html>
