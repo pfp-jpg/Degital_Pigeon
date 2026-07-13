@@ -2,9 +2,15 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Degital Pigeon</title>
-<link rel="icon" type="image/png" href="icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<meta name="theme-color" content="#F6F1E7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Digital Pigeon">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjQjU0NDNBIi8+PHBhdGggZD0iTTI4IDU4YzQtMTcgMjEtMjggMzctMjRjLTQgMy02IDgtNiAxMmM5LTIgMTcgMyAyMCAxMGMtMTAtMS0xOCAyLTIyIDljLTIgOS0xMSAxNS0yMSAxNWMtMTAgMC0xOC03LTIwLTE1Yy00IDEtOSAwLTEyLTNjNC0xIDgtMiAxMi00eiIgZmlsbD0iI0ZGRjZFOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNDAiIHI9IjIuNiIgZmlsbD0iIzJCMjYyMCIvPjwvc3ZnPg==">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjQjU0NDNBIi8+PHBhdGggZD0iTTI4IDU4YzQtMTcgMjEtMjggMzctMjRjLTQgMy02IDgtNiAxMmM5LTIgMTcgMyAyMCAxMGMtMTAtMS0xOCAyLTIyIDljLTIgOS0xMSAxNS0yMSAxNWMtMTAgMC0xOC03LTIwLTE1Yy00IDEtOSAwLTEyLTNjNC0xIDgtMiAxMi00eiIgZmlsbD0iI0ZGRjZFOCIvPjxjaXJjbGUgY3g9IjY2IiBjeT0iNDAiIHI9IjIuNiIgZmlsbD0iIzJCMjYyMCIvPjwvc3ZnPg==">
+<title>Digital Pigeon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Yuji+Mai&family=Noto+Serif+JP:wght@400;600&family=Kaisei+Decol&family=Zen+Kurenaido&family=Rampart+One&family=Kiwi+Maru:wght@400;500&family=Potta+One&family=Hachi+Maru+Pop&family=Klee+One:wght@400;600&family=Shippori+Mincho+B1:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -64,7 +70,7 @@
 }
 
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-html,body{height:100%;}
+html,body{height:100%; height:100dvh;}
 body{
   margin:0; background:var(--bg); color:var(--text); font-family:var(--font-ui);
   transition:background .3s ease, color .3s ease; overflow:hidden;
@@ -75,7 +81,7 @@ input,textarea,select{font-family:inherit;}
 ::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
 ::-webkit-scrollbar-track{background:transparent;}
 
-#app{height:100vh; width:100vw; display:flex; position:relative;}
+#app{height:100vh; height:100dvh; width:100vw; display:flex; position:relative;}
 
 /* ===== ONBOARDING ===== */
 #onboard{
@@ -115,7 +121,7 @@ input,textarea,select{font-family:inherit;}
   display:flex; flex-direction:column;
 }
 .sb-header{padding:18px 16px 12px; display:flex; align-items:center; gap:10px;}
-.sb-brand{font-family:'Shippori Mincho B1',serif; font-size:19px; letter-spacing:.06em;}
+.sb-brand{font-family:'Shippori Mincho B1',serif; font-size:17px; letter-spacing:.04em;}
 .sb-brand ruby{ruby-align:center;}
 .sb-brand rt{font-family:var(--font-ui); font-size:9px; color:var(--text-dim); letter-spacing:.02em; font-weight:600;}
 .sb-me{
@@ -163,10 +169,12 @@ input,textarea,select{font-family:inherit;}
 #messages{flex:1; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:4px;}
 .msg-row{display:flex; gap:10px; max-width:78%; margin-bottom:6px;}
 .msg-row.me{align-self:flex-end; flex-direction:row-reverse;}
-.msg-row .avatar{width:30px; height:30px; font-size:11px; cursor:pointer; margin-top:2px;}
+.msg-row .avatar-wrap{font-size:20px; cursor:pointer; margin-top:2px;}
 .msg-col{display:flex; flex-direction:column; min-width:0;}
 .msg-row.me .msg-col{align-items:flex-end;}
-.msg-meta{font-size:11px; color:var(--text-dim); margin-bottom:3px; display:flex; gap:6px;}
+.msg-meta{font-size:11px; color:var(--text-dim); margin-bottom:3px; display:flex; gap:6px; align-items:center;}
+.msg-del-btn{background:var(--surface2); border:1px solid var(--border); border-radius:50%; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; color:var(--text-dim); opacity:.75; cursor:pointer; flex-shrink:0;}
+.msg-del-btn:hover{opacity:1; color:#fff; background:var(--accent); border-color:var(--accent);}
 .bubble{
   padding:9px 13px; border-radius:14px; font-size:14px; line-height:1.55; word-break:break-word; box-shadow:var(--shadow);
 }
@@ -226,10 +234,9 @@ input,textarea,select{font-family:inherit;}
 .section-label{font-size:12px; font-weight:700; color:var(--text-dim); margin:18px 0 8px; text-transform:uppercase; letter-spacing:.06em;}
 .section-label:first-child{margin-top:0;}
 
-.profile-view{text-align:center; padding:6px 0 0;}
-.profile-view .avatar{width:80px; height:80px; font-size:26px; margin:0 auto 12px;}
-.profile-view .p-name{font-size:18px; font-weight:700; margin-bottom:2px;}
-.profile-view .p-bio{font-size:13px; color:var(--text-dim); white-space:pre-wrap; margin-top:10px; line-height:1.6; text-align:left; background:var(--surface2); padding:12px; border-radius:10px;}
+.profile-view{text-align:center; padding:8px 0 0;}
+.profile-view .p-name{font-size:26px; font-weight:700; margin-bottom:4px; margin-top:14px;}
+.profile-view .p-bio{font-size:16px; color:var(--text-dim); white-space:pre-wrap; margin-top:14px; line-height:1.65; text-align:left; background:var(--surface2); padding:18px; border-radius:12px;}
 
 .lang-toggle{display:flex; gap:8px;}
 .lang-toggle button{flex:1; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--surface2); font-size:14px; font-weight:600;}
@@ -259,10 +266,25 @@ input,textarea,select{font-family:inherit;}
 #lightbox img{max-width:100%; max-height:100%; border-radius:8px;}
 
 @media (max-width:760px){
-  #sidebar{position:fixed; z-index:150; height:100%; transform:translateX(-100%); transition:.25s;}
+  #sidebar{position:fixed; z-index:150; height:100%; width:82vw; max-width:320px; transform:translateX(-100%); transition:.25s; box-shadow:2px 0 20px rgba(0,0,0,.25);}
   #sidebar.open{transform:translateX(0);}
   .msg-row{max-width:88%;}
+  .msg-row .avatar-wrap{width:46px !important; height:46px !important;}
+  .chat-header{padding:10px 12px; gap:8px;}
+  .chat-header .room-badge{width:32px; height:32px;}
+  .ch-title{font-size:14px;}
+  .ch-sub{font-size:10px;}
+  .icon-btn{width:38px; height:38px; font-size:16px;}
+  #composer{padding:10px 10px calc(10px + env(safe-area-inset-bottom));}
+  #messages{padding:14px 12px;}
+  .modal{max-height:88vh;}
+  .modal-overlay{padding:10px;}
+  #onboard{padding:10px;}
+  .onboard-card{padding:22px;}
+  .round-btn{width:44px; height:44px;}
+  #msgInput{font-size:16px;} /* prevents iOS auto-zoom on focus */
 }
+
 .avatar-wrap{position:relative; display:inline-flex; flex-shrink:0;}
 .avatar-wrap .frame-img{position:absolute; top:50%; left:50%; pointer-events:none; max-width:none;}
 .frame-controls{margin-top:14px; display:flex; flex-direction:column; gap:10px;}
@@ -282,7 +304,7 @@ input,textarea,select{font-family:inherit;}
   <div id="sidebar">
     <div class="sb-header">
       <button class="icon-btn" id="closeSidebarBtn" style="display:none;">✕</button>
-      <div class="sb-brand">Degital Pigeon</div>
+      <div class="sb-brand">Digital Pigeon</div>
     </div>
     <div class="sb-me" id="sbMe">
       <div id="sbMeAvatar"></div>
@@ -312,6 +334,7 @@ input,textarea,select{font-family:inherit;}
           <div class="ch-sub" id="chSub"></div>
         </div>
         <div class="ch-actions">
+          <button class="icon-btn" id="memberListBtn" title="メンバー一覧">☰</button>
           <button class="icon-btn" id="editRoomBtn" title="ルーム名・画像を編集">✎</button>
           <button class="icon-btn" id="copyCodeBtn" title="コードをコピー">⧉</button>
           <button class="icon-btn" id="leaveRoomBtn" title="退出">🚪</button>
@@ -360,6 +383,17 @@ input,textarea,select{font-family:inherit;}
       <div class="hint">これは必ず初期フォントの中から選びます（バックアップ用）</div>
     </div>
     <button class="btn-primary" id="obSubmit" disabled>はじめる</button>
+    <div style="text-align:center; margin-top:14px;">
+      <a href="#" id="showRecoverLink" style="font-size:12px; color:var(--text-dim); text-decoration:underline;">すでにIDをお持ちですか？（復元する）</a>
+    </div>
+    <div id="recoverBox" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border);">
+      <div class="field">
+        <label>アカウントID</label>
+        <input type="text" id="recoverIdInput" placeholder="以前控えたIDを貼り付け">
+      </div>
+      <button class="btn-primary" id="recoverSubmit" style="background:var(--surface2); color:var(--text); border:1px solid var(--border);">このIDで復元する</button>
+      <div class="hint" style="margin-top:6px;">※ Claude共有ストレージ または Firebase 接続時のみ復元できます（ローカルのみモードでは復元不可）</div>
+    </div>
   </div>
 </div>
 
@@ -391,6 +425,12 @@ input,textarea,select{font-family:inherit;}
           <div class="fc-row"><span style="width:56px;">大きさ</span><input type="range" id="frameScale" min="50" max="250" value="100"><span id="frameScaleVal">100%</span></div>
         </div>
         <button class="btn-primary" id="saveProfileBtn" style="margin-top:16px;">保存する</button>
+        <div class="section-label">あなたのID</div>
+        <div class="hint" style="margin-bottom:8px;">端末やキャッシュを消しても、このIDで元のアカウントに戻れます。控えておくことをおすすめします。</div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="myAccountId" readonly style="flex:1; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text-dim); font-size:12px;">
+          <button class="btn-primary" id="copyIdBtn" style="width:auto; padding:0 16px; background:var(--surface2); color:var(--text); border:1px solid var(--border);">コピー</button>
+        </div>
       </div>
       <div class="tab-pane" id="pane-font">
         <div class="section-label">フォールバックフォント（必須・初期フォントから確定選択）</div>
@@ -433,7 +473,7 @@ input,textarea,select{font-family:inherit;}
 
 <!-- PROFILE VIEW MODAL -->
 <div class="modal-overlay hidden" id="profileModal">
-  <div class="modal" style="max-width:360px;">
+  <div class="modal" style="max-width:540px;">
     <div class="modal-head"><h3>プロフィール</h3><button class="modal-close" id="closeProfileBtn">✕</button></div>
     <div class="modal-body">
       <div class="profile-view" id="profileViewBody"></div>
@@ -450,6 +490,16 @@ input,textarea,select{font-family:inherit;}
       <div class="field"><label>ルーム名</label><input type="text" id="roomInfoName" maxlength="30"></div>
       <div class="hint" style="margin-bottom:14px;">メンバー全員に表示されます</div>
       <button class="btn-primary" id="saveRoomInfoBtn">保存する</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEMBER LIST MODAL -->
+<div class="modal-overlay hidden" id="memberListModal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-head"><h3>メンバー一覧</h3><button class="modal-close" id="closeMemberListBtn">✕</button></div>
+    <div class="modal-body">
+      <div id="memberListBody" class="font-list"></div>
     </div>
   </div>
 </div>
@@ -514,7 +564,7 @@ const MAX_ROOMS = 64;
 const MAX_ATTACH_COUNT = 10;
 const POLL_MS = 3500;
 function getMaxFileBytes(){
-  if(backendConfig.mode==='firebase') return 15*1024*1024;
+  if(backendConfig.mode==='firebase') return 40*1024*1024; // Realtime DB can hold larger values, but every read/write of a file this size eats into the free-tier bandwidth quota
   if(backendConfig.mode==='local') return 2*1024*1024;
   return 3.6*1024*1024; // claude shared storage ~5MB value cap after base64 overhead
 }
@@ -771,6 +821,31 @@ async function syncProfileToAllRooms(){
     frame: profile.frame||null, lastSeen:Date.now()
   });
   for(const r of rooms){ await sset(`room:${r.code}:member:${profile.id}`, payload, true); }
+  await syncAccountRecord();
+}
+
+async function syncAccountRecord(){
+  // stores a recovery snapshot (profile + joined rooms) under the account ID in SHARED storage,
+  // so it can be restored from any device by entering the ID (works with Claude/Firebase backends;
+  // "local" mode has no real cloud storage so recovery there is not possible).
+  if(!profile) return;
+  await sset(`account:${profile.id}`, JSON.stringify({profile, rooms}), true);
+}
+
+async function recoverAccountById(id){
+  id = (id||'').trim();
+  if(!id) return false;
+  const raw = await sget(`account:${id}`, true);
+  if(!raw) return false;
+  try{
+    const data = JSON.parse(raw);
+    if(!data.profile) return false;
+    profile = data.profile;
+    rooms = data.rooms || [];
+    await sset('profile', JSON.stringify(profile), false);
+    await sset('rooms', JSON.stringify(rooms), false);
+    return true;
+  }catch(e){ return false; }
 }
 
 function checkObValid(){
@@ -807,7 +882,7 @@ function avatarHtml(person, sizePx){
     const x = f.x||0, y = f.y||0;
     frameHtml = `<img class="frame-img" src="${f.dataUrl}" style="width:${scale}%;height:${scale}%;transform:translate(calc(-50% + ${x}px), calc(-50% + ${y}px));">`;
   }
-  return `<div class="avatar-wrap" style="width:${sizePx}px;height:${sizePx}px;"><div class="avatar" style="width:100%;height:100%;">${inner}</div>${frameHtml}</div>`;
+  return `<div class="avatar-wrap" style="width:${sizePx}px;height:${sizePx}px;"><div class="avatar" style="width:100%;height:100%;font-size:${Math.round(sizePx*0.38)}px;">${inner}</div>${frameHtml}</div>`;
 }
 
 function renderSidebarMe(){
@@ -862,6 +937,7 @@ async function joinRoom(){
   $('joinCodeInput').value='';
   renderRoomList();
   openRoom(code);
+  syncAccountRecord();
   toast('ルームに参加しました');
 }
 
@@ -911,6 +987,37 @@ async function refreshRoomInfo(code){
   renderRoomList();
 }
 
+async function openMemberList(){
+  if(!currentRoom) return;
+  const code = currentRoom.code;
+  $('memberListModal').classList.remove('hidden');
+  $('memberListBody').innerHTML = `<div class="hint">読み込み中…</div>`;
+  const keys = await slist(`room:${code}:member:`, true);
+  const members = [];
+  for(const k of keys){
+    const raw = await sget(k, true);
+    if(!raw) continue;
+    try{ members.push(JSON.parse(raw)); }catch(e){}
+  }
+  members.sort((a,b)=> (a.id===profile.id?-1:0) - (b.id===profile.id?-1:0));
+  if(members.length===0){
+    $('memberListBody').innerHTML = `<div class="hint">メンバーが見つかりませんでした</div>`;
+    return;
+  }
+  $('memberListBody').innerHTML = members.map(m=>`
+    <div class="font-option member-row" data-uid="${escapeHtml(m.id)}" style="cursor:pointer;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        ${avatarHtml(m, 40)}
+        <div>
+          <div style="font-weight:700; font-size:14px;">${escapeHtml(m.name||'')}${m.id===profile.id ? '（自分）' : ''}</div>
+        </div>
+      </div>
+    </div>`).join('');
+  $('memberListBody').querySelectorAll('.member-row').forEach(el=>{
+    el.onclick = ()=>{ $('memberListModal').classList.add('hidden'); showProfileFor(el.dataset.uid, {}); };
+  });
+}
+
 async function resetRoomContents(code){
   const msgKeys = await slist(`room:${code}:msg:`, true);
   for(const k of msgKeys){ await sdelete(k, true); }
@@ -923,6 +1030,7 @@ async function leaveCurrentRoom(){
   rooms = rooms.filter(r=>r.code!==code);
   await sset('rooms', JSON.stringify(rooms), false);
   await sdelete(`room:${code}:member:${profile.id}`, true);
+  syncAccountRecord();
   clearInterval(pollTimer);
   currentRoom = null;
   $('chatArea').style.display='none';
@@ -937,25 +1045,35 @@ async function leaveCurrentRoom(){
 }
 
 /* ===================== MESSAGES ===================== */
-async function refreshMessages(scrollToBottom){
+async function refreshMessages(forceScrollBottom){
   if(!currentRoom) return;
   const code = currentRoom.code;
   const keys = await slist(`room:${code}:msg:`, true);
+  const keySet = new Set(keys);
+  let removed = false;
+  for(const k of Array.from(knownMsgIds)){
+    if(!keySet.has(k)){ knownMsgIds.delete(k); removed = true; }
+  }
+  if(removed){
+    currentRoomMessages = currentRoomMessages.filter(m=>keySet.has(`room:${code}:msg:${m.id}`));
+  }
   const newKeys = keys.filter(k=>!knownMsgIds.has(k));
-  if(newKeys.length===0) return;
+  if(newKeys.length===0){
+    if(removed) rerenderAllMessages(forceScrollBottom);
+    return;
+  }
   newKeys.sort();
-  const box = $('messages');
-  const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
   for(const k of newKeys){
     knownMsgIds.add(k);
     const raw = await sget(k, true);
     if(!raw) continue;
     try{
       const m = JSON.parse(raw);
-      appendMessageDOM(m);
+      currentRoomMessages.push(m);
     }catch(e){}
   }
-  if(scrollToBottom || atBottom) box.scrollTop = box.scrollHeight;
+  currentRoomMessages.sort((a,b)=> a.id<b.id?-1:(a.id>b.id?1:0));
+  rerenderAllMessages(forceScrollBottom);
 }
 
 function parseSpoilers(text){
@@ -984,7 +1102,7 @@ function buildMessageRow(m){
   const row = document.createElement('div');
   row.className = 'msg-row' + (isMe?' me':'');
   const av = document.createElement('div');
-  av.innerHTML = avatarHtml(person, 30);
+  av.innerHTML = avatarHtml(person, 60);
   av.style.cursor = 'pointer';
   av.onclick = ()=> showProfileFor(m.userId, {name:person.name, avatar:person.avatar, bio:person.bio, font:person.font, frame:person.frame});
   const col = document.createElement('div');
@@ -993,6 +1111,14 @@ function buildMessageRow(m){
   meta.className='msg-meta';
   const time = new Date(m.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
   meta.innerHTML = `<span>${escapeHtml(person.name||'')}</span><span>${time}</span>`;
+  if(isMe){
+    const delBtn = document.createElement('button');
+    delBtn.className = 'msg-del-btn';
+    delBtn.title = '削除';
+    delBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
+    delBtn.onclick = (e)=>{ e.stopPropagation(); deleteMessage(m.id); };
+    meta.appendChild(delBtn);
+  }
   const bubble = document.createElement('div');
   bubble.className='bubble';
   bubble.style.fontFamily = resolveFontStack(person.font);
@@ -1011,12 +1137,24 @@ function appendMessageDOM(m){
   $('messages').appendChild(buildMessageRow(m));
 }
 
-function rerenderAllMessages(){
+function rerenderAllMessages(forceBottom){
   const box = $('messages');
-  const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+  const atBottom = forceBottom || (box.scrollHeight - box.scrollTop - box.clientHeight < 80);
   box.innerHTML='';
   currentRoomMessages.forEach(m=> box.appendChild(buildMessageRow(m)));
   if(atBottom) box.scrollTop = box.scrollHeight;
+}
+
+async function deleteMessage(id){
+  if(!currentRoom) return;
+  const ja = !settings || settings.language==='ja';
+  if(!confirm(ja ? 'このメッセージを削除しますか？（全員から見えなくなります）' : 'Delete this message? (removed for everyone)')) return;
+  const key = `room:${currentRoom.code}:msg:${id}`;
+  await sdelete(key, true);
+  knownMsgIds.delete(key);
+  currentRoomMessages = currentRoomMessages.filter(m=>m.id!==id);
+  rerenderAllMessages();
+  toast(ja ? 'メッセージを削除しました' : 'Message deleted');
 }
 
 async function sendMessage(){
@@ -1092,7 +1230,7 @@ async function showProfileFor(userId, fallbackData){
   }
   const body = $('profileViewBody');
   body.innerHTML = `
-    <div style="display:flex;justify-content:center;">${avatarHtml(data, 80)}</div>
+    <div style="display:flex;justify-content:center;">${avatarHtml(data, 120)}</div>
     <div class="p-name" style="font-family:${resolveFontStack(data.font)}">${escapeHtml(data.name||'')}</div>
     ${data.bio?`<div class="p-bio" style="font-family:${resolveFontStack(data.font)}">${escapeHtml(data.bio)}</div>`:''}
   `;
@@ -1190,6 +1328,7 @@ function refreshSettingsUI(){
   $('setName').value = profile.name;
   $('setBio').value = profile.bio||'';
   $('setAvatarPicker').innerHTML = profile.avatar ? `<img src="${profile.avatar}">` : '＋';
+  $('myAccountId').value = profile.id;
   // frame
   if(profile.frame){
     $('frameControls').style.display='flex';
@@ -1314,6 +1453,9 @@ function bindEvents(){
   $('addMoreAttachBtn').onclick = ()=> $('fileInput').click();
   $('fileInput').addEventListener('change', e=>{ handleFilesSelect(e.target.files); e.target.value=''; });
 
+  $('memberListBtn').onclick = openMemberList;
+  $('closeMemberListBtn').onclick = ()=> $('memberListModal').classList.add('hidden');
+
   $('editRoomBtn').onclick = ()=>{
     if(!currentRoom) return;
     const info = roomInfoCache[currentRoom.code] || {};
@@ -1434,6 +1576,10 @@ function bindEvents(){
     renderSidebarMe();
     toast('プロフィールを保存しました');
   };
+  $('copyIdBtn').onclick = ()=>{
+    navigator.clipboard && navigator.clipboard.writeText(profile.id);
+    toast('IDをコピーしました');
+  };
 
   document.querySelectorAll('#fallbackFontList .font-option').forEach(el=>{
     el.onclick = async ()=>{
@@ -1553,7 +1699,25 @@ document.addEventListener('DOMContentLoaded', ()=>{
       frame: null
     };
     await sset('profile', JSON.stringify(profile), false);
+    await syncAccountRecord();
     finishBoot();
+  };
+  $('showRecoverLink').onclick = (e)=>{
+    e.preventDefault();
+    const box = $('recoverBox');
+    box.style.display = box.style.display==='none' ? 'block' : 'none';
+  };
+  $('recoverSubmit').onclick = async ()=>{
+    const id = $('recoverIdInput').value.trim();
+    if(!id){ toast('IDを入力してください'); return; }
+    loadBackendConfig();
+    const ok = await recoverAccountById(id);
+    if(ok){
+      toast('アカウントを復元しました');
+      finishBoot();
+    }else{
+      toast('そのIDのアカウントが見つかりませんでした');
+    }
   };
 });
 
