@@ -378,6 +378,8 @@ input,textarea,select{font-family:inherit;}
   <div class="onboard-card">
     <div class="onboard-title">はじめまして</div>
     <div class="onboard-sub">プロフィールを設定してチャットを始めましょう</div>
+    <button class="btn-primary" id="obOpenConnBtn" style="background:var(--surface2); color:var(--text); border:1px solid var(--border); margin-bottom:20px;">⚙ サーバー接続を先に設定する（推奨）</button>
+    <div class="hint" style="text-align:center; margin:-12px 0 20px;">Firebaseに接続しておくと、後でIDを使ってアカウントを復元できます</div>
     <div class="avatar-picker" id="obAvatarPicker">＋</div>
     <div class="field">
       <label>名前 *</label>
@@ -760,6 +762,7 @@ async function init(){
   applyTheme();
   applyLanguage();
   (settings.customFonts||[]).forEach(cf=>injectCustomFont(cf.name, cf.dataUrl));
+  bindEvents();
 
   if(p){
     profile = JSON.parse(p);
@@ -774,7 +777,6 @@ function finishBoot(){
   applyUiFont();
   renderSidebarMe();
   renderRoomList();
-  bindEvents();
   updateComposerHint();
 }
 
