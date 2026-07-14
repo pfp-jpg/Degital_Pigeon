@@ -90,7 +90,7 @@ input,textarea,select{font-family:inherit;}
 }
 .onboard-card{
   width:100%; max-width:440px; background:var(--surface); border:1px solid var(--border);
-  border-radius:16px; padding:32px; box-shadow:var(--shadow);
+  border-radius:16px; padding:32px; box-shadow:var(--shadow); max-height:92vh; overflow-y:auto;
 }
 .onboard-title{font-family:'Shippori Mincho B1',serif; font-size:26px; letter-spacing:.08em; margin:0 0 4px;}
 .onboard-sub{color:var(--text-dim); font-size:13px; margin:0 0 24px;}
@@ -376,10 +376,20 @@ input,textarea,select{font-family:inherit;}
 <!-- ONBOARDING -->
 <div id="onboard">
   <div class="onboard-card">
-    <div class="onboard-title">はじめまして</div>
-    <div class="onboard-sub">プロフィールを設定してチャットを始めましょう</div>
-    <button class="btn-primary" id="obOpenConnBtn" style="background:var(--surface2); color:var(--text); border:1px solid var(--border); margin-bottom:20px;">⚙ サーバー接続を先に設定する（推奨）</button>
-    <div class="hint" style="text-align:center; margin:-12px 0 20px;">Firebaseに接続しておくと、後でIDを使ってアカウントを復元できます</div>
+    <div class="onboard-title">サーバーを設定</div>
+    <div class="onboard-sub">まずチャットの保存先を選びましょう（未設定でも進めますが、後からのID復元にはFirebase等の接続が必要です）</div>
+    <div class="conn-mode" id="connModeListOb"></div>
+    <div class="field" id="firebaseUrlFieldOb" style="display:none;">
+      <label>Firebase Realtime Database URL</label>
+      <input type="text" id="firebaseUrlInputOb" placeholder="https://your-project-id-default-rtdb.firebaseio.com">
+    </div>
+    <button class="btn-primary" id="saveConnBtnOb" style="background:var(--surface2); color:var(--text); border:1px solid var(--border);">この設定を保存</button>
+    <div class="conn-status" id="connStatusOb"></div>
+
+    <div style="border-top:1px solid var(--border); margin:24px 0;"></div>
+
+    <div class="onboard-title" style="font-size:22px;">プロフィールを設定</div>
+    <div class="onboard-sub">これでチャットを始められます</div>
     <div class="avatar-picker" id="obAvatarPicker">＋</div>
     <div class="field">
       <label>名前 *</label>
@@ -749,7 +759,9 @@ async function init(){
   populateOnboardFontSelect();
   buildThemeGrid();
   buildFontLists();
-  buildConnTab();
+  buildConnUI('');
+  buildConnUI('Ob');
+  refreshConnUI('Ob');
 
   const p = await sget('profile', false);
   const s = await sget('settings', false);
@@ -1318,7 +1330,7 @@ function refreshSettingsUI(){
   });
   buildCustomColorGrid();
   $('customThemeEditor').classList.toggle('show', settings.theme==='custom');
-  refreshConnUI();
+  refreshConnUI('');
   // fallback font (default fonts only)
   document.querySelectorAll('#fallbackFontList .font-option').forEach(el=>{
     el.classList.toggle('selected', el.dataset.font===settings.fallbackFont);
@@ -1404,35 +1416,44 @@ function updateComposerHint(){
 }
 
 /* ===================== CONNECTION (BACKEND) TAB ===================== */
-function buildConnTab(){
+function buildConnUI(suffix){
+  suffix = suffix || '';
+  const list = $('connModeList'+suffix);
+  if(!list) return;
   const ja = !settings || settings.language==='ja';
   const options = [
     {id:'claude', label: ja?'Claude共有ストレージ（自動・推奨、Claude.ai内でのみ利用可）':'Claude shared storage (automatic, only works inside Claude.ai)', disabled: !HAS_CLAUDE_STORAGE},
     {id:'firebase', label: ja?'Firebase Realtime Database（自分のFirebaseに接続・どこでも動作）':'Firebase Realtime Database (bring your own, works anywhere)', disabled:false},
     {id:'local', label: ja?'ローカルのみ（設定不要・同じブラウザのタブ間のみ同期）':'Local only (no setup, syncs only between tabs of this browser)', disabled:false},
   ];
-  $('connModeList').innerHTML = options.map(o=>`
+  list.innerHTML = options.map(o=>`
     <label data-mode="${o.id}" style="${o.disabled?'opacity:.45;cursor:not-allowed;':''}">
-      <input type="radio" name="connmode" value="${o.id}" ${o.disabled?'disabled':''}>
+      <input type="radio" name="connmode${suffix}" value="${o.id}" ${o.disabled?'disabled':''}>
       <span>${o.label}</span>
     </label>`).join('');
-  $('connModeList').querySelectorAll('input[name=connmode]').forEach(inp=>{
+  list.querySelectorAll(`input[name=connmode${suffix}]`).forEach(inp=>{
     inp.addEventListener('change', ()=>{
       backendConfig.mode = inp.value;
-      refreshConnUI();
+      refreshConnUI(suffix);
     });
   });
 }
-function refreshConnUI(){
-  document.querySelectorAll('#connModeList label').forEach(l=>{
+function refreshConnUI(suffix){
+  suffix = suffix || '';
+  const list = $('connModeList'+suffix);
+  if(!list) return;
+  list.querySelectorAll('label').forEach(l=>{
     const inp = l.querySelector('input');
     const on = backendConfig.mode===l.dataset.mode;
     inp.checked = on;
     l.classList.toggle('selected', on);
   });
-  $('firebaseUrlField').style.display = backendConfig.mode==='firebase' ? 'block' : 'none';
-  $('firebaseUrlInput').value = backendConfig.firebaseUrl || '';
-  const st = $('connStatus');
+  const urlField = $('firebaseUrlField'+suffix);
+  const urlInput = $('firebaseUrlInput'+suffix);
+  if(urlField) urlField.style.display = backendConfig.mode==='firebase' ? 'block' : 'none';
+  if(urlInput) urlInput.value = backendConfig.firebaseUrl || '';
+  const st = $('connStatus'+suffix);
+  if(!st) return;
   if(backendConfig.mode==='claude'){
     st.textContent = HAS_CLAUDE_STORAGE ? '✓ Claude共有ストレージに接続中です' : '⚠ この環境ではClaude共有ストレージは利用できません';
     st.className = 'conn-status ' + (HAS_CLAUDE_STORAGE?'ok':'warn');
@@ -1443,6 +1464,18 @@ function refreshConnUI(){
     st.textContent = '✓ ローカルモード：このブラウザ内の複数タブ間でのみメッセージが同期されます（他の人とチャットするにはFirebaseの設定が必要です）';
     st.className = 'conn-status warn';
   }
+}
+async function saveConnFromUI(suffix){
+  suffix = suffix || '';
+  if(backendConfig.mode==='firebase'){
+    const urlInput = $('firebaseUrlInput'+suffix);
+    const url = urlInput.value.trim().replace(/\/$/,'');
+    if(!url){ toast('Firebase URLを入力してください'); return; }
+    backendConfig.firebaseUrl = url;
+  }
+  await saveBackendConfig();
+  refreshConnUI(suffix);
+  toast('接続設定を保存しました');
 }
 
 /* ===================== EVENTS ===================== */
@@ -1656,19 +1689,10 @@ function bindEvents(){
     refreshSettingsUI();
   });
 
-  $('langJa').onclick = async ()=>{ settings.language='ja'; await sset('settings', JSON.stringify(settings), false); applyLanguage(); buildConnTab(); refreshSettingsUI(); };
-  $('langEn').onclick = async ()=>{ settings.language='en'; await sset('settings', JSON.stringify(settings), false); applyLanguage(); buildConnTab(); refreshSettingsUI(); };
+  $('langJa').onclick = async ()=>{ settings.language='ja'; await sset('settings', JSON.stringify(settings), false); applyLanguage(); buildConnUI(''); refreshSettingsUI(); };
+  $('langEn').onclick = async ()=>{ settings.language='en'; await sset('settings', JSON.stringify(settings), false); applyLanguage(); buildConnUI(''); refreshSettingsUI(); };
 
-  $('saveConnBtn').onclick = async ()=>{
-    if(backendConfig.mode==='firebase'){
-      const url = $('firebaseUrlInput').value.trim().replace(/\/$/,'');
-      if(!url){ toast('Firebase URLを入力してください'); return; }
-      backendConfig.firebaseUrl = url;
-    }
-    await saveBackendConfig();
-    refreshConnUI();
-    toast('接続設定を保存しました。ページを再読み込みすると反映されます');
-  };
+  $('saveConnBtn').onclick = ()=> saveConnFromUI('');
 
   window.__openLightbox = (url)=>{ $('lightboxImg').src=url; $('lightbox').classList.add('show'); };
   $('lightbox').onclick = ()=> $('lightbox').classList.remove('show');
@@ -1697,6 +1721,7 @@ function refreshChatFonts(){
 
 /* ===================== ONBOARD SUBMIT ===================== */
 document.addEventListener('DOMContentLoaded', ()=>{
+  $('saveConnBtnOb').onclick = ()=> saveConnFromUI('Ob');
   $('obName').addEventListener('input', checkObValid);
   $('obAvatarPicker').onclick = ()=>{ $('avatarInput').dataset.mode='onboard'; $('avatarInput').click(); };
   $('obSubmit').onclick = async ()=>{
