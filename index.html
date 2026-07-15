@@ -458,7 +458,6 @@ input,textarea,select{font-family:inherit;}
         <div class="section-label">プロフィール表示フォント</div>
         <div class="hint" style="margin-bottom:8px;">名前・詳細やチャットの吹き出しに使われるフォントです</div>
         <div class="font-list" id="profileFontList"></div>
-        <div class="font-list" id="customFontListProfile" style="margin-top:8px;"></div>
         <div class="section-label">表示色</div>
         <div style="display:flex; align-items:center; gap:10px;">
           <input type="color" id="profileColorInput" value="#2B2620">
@@ -793,13 +792,20 @@ async function deleteFromFirebaseStorage(path){
 }
 
 /* ===================== CLOUDINARY (free, no-card, large file uploads) ===================== */
+function cloudinaryResourceType(mimeType){
+  mimeType = mimeType || '';
+  if(mimeType.startsWith('image/')) return 'image';
+  if(mimeType.startsWith('video/') || mimeType.startsWith('audio/')) return 'video'; // Cloudinary treats audio as video-without-picture
+  return 'raw'; // zip, pdf, docs, and anything else
+}
 async function uploadToCloudinary(file){
   if(!backendConfig.cloudinaryCloud || !backendConfig.cloudinaryPreset) return null;
+  const resourceType = cloudinaryResourceType(file.type);
   const form = new FormData();
   form.append('file', file);
   form.append('upload_preset', backendConfig.cloudinaryPreset);
   try{
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${backendConfig.cloudinaryCloud}/auto/upload`, {
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${backendConfig.cloudinaryCloud}/${resourceType}/upload`, {
       method:'POST', body: form
     });
     if(!res.ok){
@@ -1488,9 +1494,7 @@ function customFontOptionsHtml(){
     </div>`).join('') || `<div class="hint">インポート済みのフォントはありません</div>`;
 }
 function renderCustomFontList(){
-  const html = customFontOptionsHtml();
-  $('customFontListSystem').innerHTML = html;
-  $('customFontListProfile').innerHTML = html;
+  $('customFontListSystem').innerHTML = customFontOptionsHtml();
 }
 
 function refreshSettingsUI(){
@@ -1518,9 +1522,6 @@ function refreshSettingsUI(){
   renderCustomFontList();
   document.querySelectorAll('#customFontListSystem .font-option').forEach(el=>{
     el.classList.toggle('selected', ('custom:'+el.dataset.customfont)===sysFont);
-  });
-  document.querySelectorAll('#customFontListProfile .font-option').forEach(el=>{
-    el.classList.toggle('selected', ('custom:'+el.dataset.customfont)===curFont);
   });
   // profile display color
   $('profileColorInput').value = profile.color || currentThemeTextColor();
@@ -1925,7 +1926,7 @@ function bindEvents(){
       const ok = await sset('settings', JSON.stringify(settings), false);
       if(!ok){ toast('保存に失敗しました（ファイルが大きい可能性があります）'); settings.customFonts.pop(); return; }
       refreshSettingsUI();
-      toast('フォントを追加しました。システムフォント／プロフィール表示フォントから選択できます');
+      toast('フォントを追加しました。システムフォントから選択できます');
     };
     reader.readAsDataURL(file);
     e.target.value='';
@@ -1959,16 +1960,6 @@ function bindEvents(){
       sset('settings', JSON.stringify(settings), false);
       applyUiFont();
       refreshSettingsUI();
-      return;
-    }
-    const profOpt = e.target.closest('#customFontListProfile .font-option');
-    if(profOpt){
-      profile.font = 'custom:'+profOpt.dataset.customfont;
-      sset('profile', JSON.stringify(profile), false);
-      syncProfileToAllRooms();
-      renderSidebarMe();
-      refreshSettingsUI();
-      if(currentRoom) refreshChatFonts();
     }
   });
 }
