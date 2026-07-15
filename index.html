@@ -202,6 +202,7 @@ input,textarea,select{font-family:inherit;}
   font-size:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
 .round-btn.ghost{background:var(--surface2); color:var(--text); border:1px solid var(--border);}
+.round-btn:disabled{opacity:.4; cursor:not-allowed;}
 .composer-hint{font-size:10px; color:var(--text-dim); margin-top:6px; padding-left:4px;}
 
 /* ===== MODALS ===== */
@@ -383,6 +384,25 @@ input,textarea,select{font-family:inherit;}
       <label>Firebase Realtime Database URL</label>
       <input type="text" id="firebaseUrlInputOb" placeholder="https://your-project-id-default-rtdb.firebaseio.com">
     </div>
+    <div class="section-label" style="margin-top:16px;">ファイルストレージ（大きい添付ファイル用・任意）</div>
+    <div class="field">
+      <select id="fileStorageSelectOb">
+        <option value="inline">埋め込み（追加設定不要・約6MBまで）</option>
+        <option value="firebase">Firebase Storage（要Blazeプラン）</option>
+        <option value="cloudinary">Cloudinary（無料・カード不要）</option>
+      </select>
+    </div>
+    <div class="field" id="storageBucketFieldOb" style="display:none;">
+      <label>Firebase Storage バケット</label>
+      <input type="text" id="storageBucketInputOb" placeholder="your-project-id.appspot.com">
+    </div>
+    <div class="field" id="cloudinaryFieldsOb" style="display:none;">
+      <label>Cloudinary クラウド名</label>
+      <input type="text" id="cloudinaryCloudInputOb" placeholder="my-cloud-name">
+      <label style="margin-top:10px;">アップロードプリセット名（Unsigned）</label>
+      <input type="text" id="cloudinaryPresetInputOb" placeholder="my_unsigned_preset">
+      <div class="hint">Cloudinaryダッシュボード → Settings → Upload → Upload presets で新規作成し、Signing Modeを「Unsigned」にしてください</div>
+    </div>
     <button class="btn-primary" id="saveConnBtnOb" style="background:var(--surface2); color:var(--text); border:1px solid var(--border);">この設定を保存</button>
     <div class="conn-status" id="connStatusOb"></div>
 
@@ -486,6 +506,25 @@ input,textarea,select{font-family:inherit;}
           <label>Firebase Realtime Database URL</label>
           <input type="text" id="firebaseUrlInput" placeholder="https://your-project-id-default-rtdb.firebaseio.com">
         </div>
+        <div class="section-label" style="margin-top:16px;">ファイルストレージ（大きい添付ファイル用・任意）</div>
+        <div class="field">
+          <select id="fileStorageSelect">
+            <option value="inline">埋め込み（追加設定不要・約6MBまで）</option>
+            <option value="firebase">Firebase Storage（要Blazeプラン）</option>
+            <option value="cloudinary">Cloudinary（無料・カード不要）</option>
+          </select>
+        </div>
+        <div class="field" id="storageBucketField" style="display:none;">
+          <label>Firebase Storage バケット</label>
+          <input type="text" id="storageBucketInput" placeholder="your-project-id.appspot.com">
+        </div>
+        <div class="field" id="cloudinaryFields" style="display:none;">
+          <label>Cloudinary クラウド名</label>
+          <input type="text" id="cloudinaryCloudInput" placeholder="my-cloud-name">
+          <label style="margin-top:10px;">アップロードプリセット名（Unsigned）</label>
+          <input type="text" id="cloudinaryPresetInput" placeholder="my_unsigned_preset">
+          <div class="hint">Cloudinaryダッシュボード → Settings → Upload → Upload presets で新規作成し、Signing Modeを「Unsigned」にしてください</div>
+        </div>
         <button class="btn-primary" id="saveConnBtn">この設定を保存</button>
         <div class="conn-status" id="connStatus"></div>
       </div>
@@ -586,7 +625,14 @@ const MAX_ROOMS = 64;
 const MAX_ATTACH_COUNT = 10;
 const POLL_MS = 3500;
 function getMaxFileBytes(){
-  if(backendConfig.mode==='firebase') return 40*1024*1024; // Realtime DB can hold larger values, but every read/write of a file this size eats into the free-tier bandwidth quota
+  // Firebase Realtime Database has a HARD limit of 10MB for any single stored string value.
+  // Our whole message (text + all attachments, base64-encoded) is stored as one string,
+  // and base64 inflates raw bytes by ~4/3, so we cap raw bytes well below that ceiling
+  // UNLESS a real file storage provider is configured, in which case files are uploaded as
+  // real blobs and only a short URL is stored in the database, sidestepping the limit entirely.
+  if(backendConfig.fileStorage==='firebase' && backendConfig.storageBucket) return 100*1024*1024;
+  if(backendConfig.fileStorage==='cloudinary' && backendConfig.cloudinaryCloud && backendConfig.cloudinaryPreset) return 100*1024*1024;
+  if(backendConfig.mode==='firebase') return 6*1024*1024;
   if(backendConfig.mode==='local') return 2*1024*1024;
   return 3.6*1024*1024; // claude shared storage ~5MB value cap after base64 overhead
 }
@@ -635,7 +681,7 @@ function applyUiFont(){
    - "firebase": uses a user-supplied Firebase Realtime Database (works anywhere, cross-device)
    - "local": browser localStorage only (works with no setup, but only syncs between tabs of the SAME browser) */
 const HAS_CLAUDE_STORAGE = (typeof window.storage !== 'undefined' && window.storage !== null);
-let backendConfig = {mode: HAS_CLAUDE_STORAGE ? 'claude' : 'local', firebaseUrl:''};
+let backendConfig = {mode: HAS_CLAUDE_STORAGE ? 'claude' : 'local', firebaseUrl:'', storageBucket:'', fileStorage:'inline', cloudinaryCloud:'', cloudinaryPreset:''};
 let localDeviceId = null;
 
 function safeLocalStorage(){ try{ return window.localStorage; }catch(e){ return null; } }
@@ -647,6 +693,11 @@ function loadBackendConfig(){
     const raw = ls.getItem('yuichat_backend');
     if(raw){ const c = JSON.parse(raw); if(c && c.mode) backendConfig = c; }
   }catch(e){}
+  if(!backendConfig.fileStorage){
+    backendConfig.fileStorage = backendConfig.storageBucket ? 'firebase' : 'inline'; // migrate legacy setups
+  }
+  if(backendConfig.cloudinaryCloud===undefined) backendConfig.cloudinaryCloud = '';
+  if(backendConfig.cloudinaryPreset===undefined) backendConfig.cloudinaryPreset = '';
   localDeviceId = ls.getItem('yuichat_device_id');
   if(!localDeviceId){ localDeviceId = 'dev_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); try{ls.setItem('yuichat_device_id', localDeviceId);}catch(e){} }
   if(!HAS_CLAUDE_STORAGE && backendConfig.mode==='claude') backendConfig.mode='local';
@@ -674,8 +725,12 @@ async function firebaseSet(key, value, shared){
     const res = await fetch(`${backendConfig.firebaseUrl.replace(/\/$/,'')}/${fbKeyPath(key,shared)}.json`, {
       method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(value)
     });
+    if(!res.ok){
+      const errText = await res.text().catch(()=> '');
+      console.warn('Firebase write failed:', res.status, errText);
+    }
     return res.ok;
-  }catch(e){ return false; }
+  }catch(e){ console.warn('Firebase write error:', e); return false; }
 }
 async function firebaseList(prefix, shared){
   if(!backendConfig.firebaseUrl) return [];
@@ -695,6 +750,57 @@ async function firebaseDelete(key, shared){
     return res.ok;
   }catch(e){ return false; }
 }
+
+/* ===================== FIREBASE STORAGE (large file uploads) ===================== */
+async function uploadToFirebaseStorage(file, roomCode){
+  if(!backendConfig.storageBucket) return null;
+  const bucket = backendConfig.storageBucket.replace(/^gs:\/\//,'').replace(/\/$/,'');
+  const safeName = file.name.replace(/[^a-zA-Z0-9_.\-]/g,'_').slice(-80) || 'file';
+  const path = `uploads/${(roomCode||'misc').replace(/[^a-zA-Z0-9_\-]/g,'_')}/${Date.now()}_${Math.random().toString(36).slice(2,8)}_${safeName}`;
+  const encodedPath = encodeURIComponent(path);
+  try{
+    const res = await fetch(`https://firebasestorage.googleapis.com/v0/b/${bucket}/o?uploadType=media&name=${encodedPath}`, {
+      method:'POST',
+      headers:{'Content-Type': file.type || 'application/octet-stream'},
+      body: file
+    });
+    if(!res.ok){
+      console.warn('Storage upload failed:', res.status, await res.text().catch(()=>''));
+      return null;
+    }
+    const data = await res.json();
+    const token = data.downloadTokens;
+    const url = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodedPath}?alt=media${token?('&token='+token):''}`;
+    return {url, path, provider:'firebase', size:file.size, type:file.type||'application/octet-stream', name:file.name};
+  }catch(e){ console.warn('Storage upload error:', e); return null; }
+}
+async function deleteFromFirebaseStorage(path){
+  if(!backendConfig.storageBucket || !path) return;
+  const bucket = backendConfig.storageBucket.replace(/^gs:\/\//,'').replace(/\/$/,'');
+  try{ await fetch(`https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(path)}`, {method:'DELETE'}); }catch(e){}
+}
+
+/* ===================== CLOUDINARY (free, no-card, large file uploads) ===================== */
+async function uploadToCloudinary(file){
+  if(!backendConfig.cloudinaryCloud || !backendConfig.cloudinaryPreset) return null;
+  const form = new FormData();
+  form.append('file', file);
+  form.append('upload_preset', backendConfig.cloudinaryPreset);
+  try{
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${backendConfig.cloudinaryCloud}/auto/upload`, {
+      method:'POST', body: form
+    });
+    if(!res.ok){
+      console.warn('Cloudinary upload failed:', res.status, await res.text().catch(()=>''));
+      return null;
+    }
+    const data = await res.json();
+    return {url:data.secure_url, provider:'cloudinary', size:file.size, type:file.type||'application/octet-stream', name:file.name};
+  }catch(e){ console.warn('Cloudinary upload error:', e); return null; }
+}
+// Note: deleting a Cloudinary asset requires a signed request (API secret), which we deliberately
+// never expose client-side. Deleted messages remove the file from chat, but the underlying asset
+// stays in Cloudinary storage — clean it up manually from the Cloudinary dashboard if needed.
 
 function localKeyPath(key, shared){
   return `yuichat_data_${shared?'shared':'personal_'+localDeviceId}__${key}`;
@@ -1043,7 +1149,16 @@ async function openMemberList(){
 
 async function resetRoomContents(code){
   const msgKeys = await slist(`room:${code}:msg:`, true);
-  for(const k of msgKeys){ await sdelete(k, true); }
+  for(const k of msgKeys){
+    const raw = await sget(k, true);
+    if(raw){
+      try{
+        const m = JSON.parse(raw);
+        (m.files||[]).forEach(f=>{ if(f.provider==='firebase' && f.path) deleteFromFirebaseStorage(f.path); });
+      }catch(e){}
+    }
+    await sdelete(k, true);
+  }
   await sdelete(`room:${code}:info`, true);
 }
 
@@ -1107,15 +1222,17 @@ function parseSpoilers(text){
 
 let currentRoomMessages = []; // cache of {id,m} for the open room, used to re-render on font refresh
 
+function fileSrc(f){ return f.url || f.dataUrl; }
 function attachmentHtml(m){
   const files = m.files || (m.file ? [m.file] : []);
   if(files.length===0) return '';
   return files.map(f=>{
-    const {dataUrl, type, name} = f;
-    if(type.startsWith('image/')) return `<img class="att" src="${dataUrl}" onclick="window.__openLightbox('${dataUrl.replace(/'/g,"%27")}')">`;
-    if(type.startsWith('video/')) return `<video class="att" src="${dataUrl}" controls></video>`;
-    if(type.startsWith('audio/')) return `<audio class="att" src="${dataUrl}" controls></audio>`;
-    return `<a class="file-chip" href="${dataUrl}" download="${escapeHtml(name)}" style="color:inherit;text-decoration:none;">📄 ${escapeHtml(name)}</a>`;
+    const src = fileSrc(f);
+    const {type, name} = f;
+    if(type.startsWith('image/')) return `<img class="att" src="${src}" onclick="window.__openLightbox('${src.replace(/'/g,"%27")}')">`;
+    if(type.startsWith('video/')) return `<video class="att" src="${src}" controls></video>`;
+    if(type.startsWith('audio/')) return `<audio class="att" src="${src}" controls></audio>`;
+    return `<a class="file-chip" href="${src}" download="${escapeHtml(name)}" target="_blank" style="color:inherit;text-decoration:none;">📄 ${escapeHtml(name)}</a>`;
   }).join('<br>');
 }
 
@@ -1173,6 +1290,8 @@ async function deleteMessage(id){
   const ja = !settings || settings.language==='ja';
   if(!confirm(ja ? 'このメッセージを削除しますか？（全員から見えなくなります）' : 'Delete this message? (removed for everyone)')) return;
   const key = `room:${currentRoom.code}:msg:${id}`;
+  const msg = currentRoomMessages.find(m=>m.id===id);
+  if(msg && msg.files){ msg.files.forEach(f=>{ if(f.provider==='firebase' && f.path) deleteFromFirebaseStorage(f.path); }); }
   await sdelete(key, true);
   knownMsgIds.delete(key);
   currentRoomMessages = currentRoomMessages.filter(m=>m.id!==id);
@@ -1184,17 +1303,20 @@ async function sendMessage(){
   const text = $('msgInput').value.trim();
   if(!text && pendingAttachments.length===0) return;
   if(!currentRoom) return;
+  if(hasUploadingAttachments()){ toast('アップロード中です。少々お待ちください'); return; }
   const id = Date.now().toString(36).padStart(9,'0') + '_' + Math.random().toString(36).slice(2,8);
   const msg = {
     id, userId:profile.id, name:profile.name, avatar:profile.avatar||'', font:profile.font, frame:profile.frame||null,
     text: text||'',
-    files: pendingAttachments.map(a=>({dataUrl:a.dataUrl, type:a.type, name:a.name})),
+    files: pendingAttachments.map(a=> a.url
+      ? {url:a.url, path:a.path, provider:a.provider, type:a.type, name:a.name}
+      : {dataUrl:a.dataUrl, type:a.type, name:a.name}),
     ts: Date.now()
   };
   $('msgInput').value=''; autoGrow($('msgInput'));
   pendingAttachments=[]; renderAttachChips(); hideAttachPreview();
   const ok = await sset(`room:${currentRoom.code}:msg:${id}`, JSON.stringify(msg), true);
-  if(!ok){ toast('送信に失敗しました（合計ファイルサイズが大きすぎる可能性があります）'); return; }
+  if(!ok){ toast('送信に失敗しました（添付ファイルが大きすぎます。上限内に収めてください）'); return; }
   knownMsgIds.add(`room:${currentRoom.code}:msg:${id}`);
   appendMessageDOM(msg);
   $('messages').scrollTop = $('messages').scrollHeight;
@@ -1204,11 +1326,12 @@ function autoGrow(el){ el.style.height='auto'; el.style.height=Math.min(el.scrol
 
 /* ===================== ATTACHMENT ===================== */
 function hideAttachPreview(){ if(pendingAttachments.length===0) $('attachPreview').classList.remove('show'); }
-function currentAttachBytes(){ return pendingAttachments.reduce((sum,a)=>sum+a.size,0); }
+function currentAttachBytes(){ return pendingAttachments.reduce((sum,a)=>sum+(a.size||0),0); }
+function hasUploadingAttachments(){ return pendingAttachments.some(a=>a.uploading); }
 function renderAttachChips(){
   const list = $('attachChipList');
   list.innerHTML = pendingAttachments.map((a,i)=>`
-    <div class="attach-chip"><span>📎 ${escapeHtml(a.name)}</span><button class="icon-btn" style="width:22px;height:22px;font-size:10px;" data-idx="${i}">✕</button></div>
+    <div class="attach-chip"><span>${a.uploading ? '⏳ アップロード中… ' : '📎 '}${escapeHtml(a.name)}</span><button class="icon-btn" style="width:22px;height:22px;font-size:10px;" data-idx="${i}" ${a.uploading?'disabled':''}>✕</button></div>
   `).join('');
   list.querySelectorAll('button[data-idx]').forEach(btn=>{
     btn.onclick = ()=>{
@@ -1218,26 +1341,52 @@ function renderAttachChips(){
     };
   });
   if(pendingAttachments.length>0) $('attachPreview').classList.add('show');
+  $('sendBtn').disabled = hasUploadingAttachments();
 }
 async function handleFilesSelect(fileList){
   const files = Array.from(fileList||[]);
   if(files.length===0) return;
+  const provider = backendConfig.fileStorage; // 'inline' | 'firebase' | 'cloudinary'
+  const useFirebaseStorage = provider==='firebase' && !!backendConfig.storageBucket;
+  const useCloudinary = provider==='cloudinary' && !!backendConfig.cloudinaryCloud && !!backendConfig.cloudinaryPreset;
+  const useUpload = useFirebaseStorage || useCloudinary;
   const maxBytes = getMaxFileBytes();
   for(const file of files){
     if(pendingAttachments.length >= MAX_ATTACH_COUNT){ toast(`一度に送れるファイルは最大${MAX_ATTACH_COUNT}個までです`); break; }
-    if(currentAttachBytes() + file.size > maxBytes){
+    if(file.size > maxBytes){
+      toast(`「${file.name}」は上限（約${(maxBytes/1024/1024).toFixed(1)}MB）を超えています`);
+      continue;
+    }
+    if(!useUpload && currentAttachBytes() + file.size > maxBytes){
       toast(`添付の合計サイズが上限（約${(maxBytes/1024/1024).toFixed(1)}MB）を超えます`);
       continue;
     }
-    await new Promise(resolve=>{
-      const reader = new FileReader();
-      reader.onload = ()=>{
-        pendingAttachments.push({dataUrl:reader.result, type:file.type||'application/octet-stream', name:file.name, size:file.size});
-        resolve();
-      };
-      reader.onerror = ()=> resolve();
-      reader.readAsDataURL(file);
-    });
+    if(useUpload){
+      const placeholder = {name:file.name, size:file.size, type:file.type||'application/octet-stream', uploading:true};
+      pendingAttachments.push(placeholder);
+      renderAttachChips();
+      const uploaded = useFirebaseStorage
+        ? await uploadToFirebaseStorage(file, currentRoom ? currentRoom.code : 'misc')
+        : await uploadToCloudinary(file);
+      const idx = pendingAttachments.indexOf(placeholder);
+      if(uploaded){
+        if(idx>=0) pendingAttachments[idx] = uploaded;
+      }else{
+        if(idx>=0) pendingAttachments.splice(idx,1);
+        toast(`アップロードに失敗しました: ${file.name}`);
+      }
+      renderAttachChips();
+    }else{
+      await new Promise(resolve=>{
+        const reader = new FileReader();
+        reader.onload = ()=>{
+          pendingAttachments.push({dataUrl:reader.result, type:file.type||'application/octet-stream', name:file.name, size:file.size});
+          resolve();
+        };
+        reader.onerror = ()=> resolve();
+        reader.readAsDataURL(file);
+      });
+    }
   }
   renderAttachChips();
 }
@@ -1410,8 +1559,15 @@ function updateComposerHint(){
   const mb = (getMaxFileBytes()/1024/1024).toFixed(1);
   const el = document.querySelector('.composer-hint');
   if(!el) return;
+  const useStorage = (backendConfig.fileStorage==='firebase' && !!backendConfig.storageBucket) ||
+                      (backendConfig.fileStorage==='cloudinary' && !!backendConfig.cloudinaryCloud && !!backendConfig.cloudinaryPreset);
   const spoilerText = ja?'||text|| で塗りつぶし隠し文字になります（クリックで表示）':'Wrap text in ||...|| to spoiler it (click to reveal)';
-  const fileText = ja? ` ／ 添付は最大${MAX_ATTACH_COUNT}個・合計約${mb}MBまで` : ` / up to ${MAX_ATTACH_COUNT} files, ~${mb}MB total`;
+  let fileText;
+  if(useStorage){
+    fileText = ja? ` ／ 添付は最大${MAX_ATTACH_COUNT}個・1ファイルあたり約${mb}MBまで` : ` / up to ${MAX_ATTACH_COUNT} files, ~${mb}MB each`;
+  }else{
+    fileText = ja? ` ／ 添付は最大${MAX_ATTACH_COUNT}個・合計約${mb}MBまで` : ` / up to ${MAX_ATTACH_COUNT} files, ~${mb}MB total`;
+  }
   el.textContent = spoilerText + fileText;
 }
 
@@ -1437,6 +1593,14 @@ function buildConnUI(suffix){
       refreshConnUI(suffix);
     });
   });
+  const fsSelect = $('fileStorageSelect'+suffix);
+  if(fsSelect && !fsSelect.dataset.bound){
+    fsSelect.dataset.bound = '1';
+    fsSelect.addEventListener('change', ()=>{
+      backendConfig.fileStorage = fsSelect.value;
+      refreshConnUI(suffix);
+    });
+  }
 }
 function refreshConnUI(suffix){
   suffix = suffix || '';
@@ -1452,18 +1616,40 @@ function refreshConnUI(suffix){
   const urlInput = $('firebaseUrlInput'+suffix);
   if(urlField) urlField.style.display = backendConfig.mode==='firebase' ? 'block' : 'none';
   if(urlInput) urlInput.value = backendConfig.firebaseUrl || '';
+
+  const fsSelect = $('fileStorageSelect'+suffix);
+  if(fsSelect) fsSelect.value = backendConfig.fileStorage || 'inline';
+  const bucketField = $('storageBucketField'+suffix);
+  const bucketInput = $('storageBucketInput'+suffix);
+  if(bucketField) bucketField.style.display = backendConfig.fileStorage==='firebase' ? 'block' : 'none';
+  if(bucketInput) bucketInput.value = backendConfig.storageBucket || '';
+  const cldFields = $('cloudinaryFields'+suffix);
+  const cldCloudInput = $('cloudinaryCloudInput'+suffix);
+  const cldPresetInput = $('cloudinaryPresetInput'+suffix);
+  if(cldFields) cldFields.style.display = backendConfig.fileStorage==='cloudinary' ? 'block' : 'none';
+  if(cldCloudInput) cldCloudInput.value = backendConfig.cloudinaryCloud || '';
+  if(cldPresetInput) cldPresetInput.value = backendConfig.cloudinaryPreset || '';
+
   const st = $('connStatus'+suffix);
   if(!st) return;
+  const parts = [];
   if(backendConfig.mode==='claude'){
-    st.textContent = HAS_CLAUDE_STORAGE ? '✓ Claude共有ストレージに接続中です' : '⚠ この環境ではClaude共有ストレージは利用できません';
-    st.className = 'conn-status ' + (HAS_CLAUDE_STORAGE?'ok':'warn');
+    parts.push(HAS_CLAUDE_STORAGE ? '✓ Claude共有ストレージに接続中です' : '⚠ この環境ではClaude共有ストレージは利用できません');
   }else if(backendConfig.mode==='firebase'){
-    st.textContent = backendConfig.firebaseUrl ? '✓ Firebase URLが設定されています' : '⚠ Firebase URLを入力して保存してください';
-    st.className = 'conn-status ' + (backendConfig.firebaseUrl?'ok':'warn');
+    parts.push(backendConfig.firebaseUrl ? '✓ Database接続済み' : '⚠ Database URL未設定');
   }else{
-    st.textContent = '✓ ローカルモード：このブラウザ内の複数タブ間でのみメッセージが同期されます（他の人とチャットするにはFirebaseの設定が必要です）';
-    st.className = 'conn-status warn';
+    parts.push('・ローカルモード（このブラウザ内のみ同期）');
   }
+  if(backendConfig.fileStorage==='firebase'){
+    parts.push(backendConfig.storageBucket ? '✓ Firebase Storage接続済み（大容量OK）' : '⚠ Storageバケット未設定');
+  }else if(backendConfig.fileStorage==='cloudinary'){
+    parts.push((backendConfig.cloudinaryCloud && backendConfig.cloudinaryPreset) ? '✓ Cloudinary接続済み（大容量OK）' : '⚠ Cloudinaryの設定が未完了');
+  }else{
+    parts.push('・ファイルは埋め込み方式（約6MBまで）');
+  }
+  st.textContent = parts.join(' ／ ');
+  const warn = parts.some(p=>p.startsWith('⚠'));
+  st.className = 'conn-status ' + (warn ? 'warn' : 'ok');
 }
 async function saveConnFromUI(suffix){
   suffix = suffix || '';
@@ -1473,8 +1659,20 @@ async function saveConnFromUI(suffix){
     if(!url){ toast('Firebase URLを入力してください'); return; }
     backendConfig.firebaseUrl = url;
   }
+  const fsSelect = $('fileStorageSelect'+suffix);
+  backendConfig.fileStorage = fsSelect ? fsSelect.value : 'inline';
+  if(backendConfig.fileStorage==='firebase'){
+    const bucketInput = $('storageBucketInput'+suffix);
+    backendConfig.storageBucket = bucketInput ? bucketInput.value.trim().replace(/^gs:\/\//,'').replace(/\/$/,'') : '';
+  }else if(backendConfig.fileStorage==='cloudinary'){
+    const cldCloudInput = $('cloudinaryCloudInput'+suffix);
+    const cldPresetInput = $('cloudinaryPresetInput'+suffix);
+    backendConfig.cloudinaryCloud = cldCloudInput ? cldCloudInput.value.trim() : '';
+    backendConfig.cloudinaryPreset = cldPresetInput ? cldPresetInput.value.trim() : '';
+  }
   await saveBackendConfig();
   refreshConnUI(suffix);
+  updateComposerHint();
   toast('接続設定を保存しました');
 }
 
